@@ -3,7 +3,6 @@ from Public.dataBase_ld import *
 from Public.var_mex_credit import *
 import random
 import unittest,requests,json
-from HTMLTestRunner_Chart import HTMLTestRunner
 class DaiQian_Api_Test(unittest.TestCase):
     @classmethod
     def setUpClass(cls):  #在所有用例执行之前运行的
@@ -62,20 +61,17 @@ class DaiQian_Api_Test(unittest.TestCase):
         sql="select CERT_AUTH from cu_cust_auth_dtl  where CUST_NO='"+custNo+"';"  #cu_客户认证信息明细表
         cert_auth=DataBase(which_db).get_one(sql)
         self.assertEqual(cert_auth[0],1)
-    # def test_auth_kycStat(self):
-    #     '''【LanaDigital】/api/cust/auth/kyc/stat KYC认证信息查询，判断是否kyc认证项都完成-正案例'''
-    #     test_data=for_test_auth_other()
-    #     phone=test_data[0]
-    #     custNo=test_data[1]
-    #     head=test_data[2]
-    #     update_kyc_auth(phone,custNo)
-    #     data={"custNo":custNo}
-    #     r=requests.post(host_api+'/api/cust/auth/kyc/stat',data=json.dumps(data),headers=head)
-    #     s=r.json()
-    #     self.assertEqual(s['errorCode'],0)
-    #     self.assertEqual(s['data']['idBackPhoto'],True)
-    #     self.assertEqual(s['data']['idFrontPhoto'], True)
-    #     self.assertEqual(s['data']['idHoldPhoto'], True)
+    def test_auth_kycStat(self):
+        '''【LanaDigital】/api/cust/auth/kyc/stat KYC认证信息查询，判断是否kyc认证项都完成-正案例'''
+        test_data=for_test_auth_other()
+        phone=test_data[0]
+        custNo=test_data[1]
+        head=test_data[2]
+        update_kyc_auth(phone,custNo)
+        data={"custNo":custNo}
+        r=requests.post(host_api+'/api/cust/auth/kyc/stat',data=json.dumps(data),headers=head)
+        s=r.json()
+        self.assertEqual(s['errorCode'],0)
     def test_auth_review(self):
         '''【LanaDigital】/api/cust/auth/review接口-正案例'''
         test_data=for_test_auth_other()
@@ -132,7 +128,7 @@ class DaiQian_Api_Test(unittest.TestCase):
         custNo=test_data[1]
         head=test_data[2]
         # print('custNo---',custNo)
-        sql = "UPDATE cu_cust_auth_dtl set CERT_AUTH='1', kyc_auth = '1', work_auth = '1' WHERE CUST_NO='"+custNo+"';"
+        sql = "UPDATE cu_cust_auth_dtl set cert_auth='1', kyc_auth = '1', work_auth = '1',OTHER_CONTACT_AUTH='1' WHERE CUST_NO='"+custNo+"';"
         DataBase(which_db).executeUpdateSql(sql)
         data={"custNo":custNo,"contacts":[{"custNo":custNo,"name":"test1","phone":"123333","relationship":"10110004","relationshipName":"Hermanos"},{"custNo":custNo,"name":"test2","phone":"543212601","relationship":"10110001","relationshipName":"Padres"}]}
         r=requests.post(host_api+'/api/cust/auth/other/contact',data=json.dumps(data),headers=head)#最后一步，填写2个联系人的联系方式
@@ -160,16 +156,16 @@ class DaiQian_Api_Test(unittest.TestCase):
         head=test_data[2]
         r=requests.post(host_api+'/api/task/risk/credit', headers=head)
         self.assertEqual(r.status_code,200)
-    def test_credit_payment(self):
-        '''【LanaDigital】/api/credit/payment用户提现接口-正案例'''
-        test_data=for_apply_loan()
-        custNo=test_data[0]
-        head=test_data[1]
-        data10={"withdrawAmt":withdrawAmt}
-        r=requests.post(host_api+'/api/credit/payment',data=json.dumps(data10),headers=head)
-        self.assertEqual(r.status_code,200)
-        t=r.json()
-        self.assertIsNotNone(t['data']['withdrawAcctNo'])
+    # def test_credit_payment(self):
+    #     '''【LanaDigital】/api/credit/payment用户提现接口-正案例'''
+    #     test_data=for_apply_loan()
+    #     custNo=test_data[0]
+    #     head=test_data[1]
+    #     data10={"withdrawAmt":withdrawAmt}
+    #     r=requests.post(host_api+'/api/credit/payment',data=json.dumps(data10),headers=head)
+    #     self.assertEqual(r.status_code,200)
+    #     t=r.json()
+    #     self.assertIsNotNone(t['data']['withdrawAcctNo'])
     # def test_payment_detail(self):
     #     '''【LanaDigital】/api/credit/payment/detail提现详情接口-正案例'''
     #     registNo=
@@ -177,14 +173,3 @@ class DaiQian_Api_Test(unittest.TestCase):
     def tearDownClass(cls): #在所有用例都执行完之后运行的
         DataBase(which_db).closeDB()
         print('我是tearDownClass，我位于所有用例运行的结束')
-
-# if __name__ == '__main__':
-#     suite = unittest.TestLoader().loadTestsFromTestCase(App_Api_Test)
-#     runner = HTMLTestRunner(
-#         title="LanaDigital接口测试-带截图，饼图，折线图，历史结果查看的测试报告",
-#         description="LanaDigital贷前接口测试",
-#         stream=open("./LanaDigitalApp_Api_Test_Report.html","wb"),
-#         verbosity=1000,
-#         retry=3,  # 失败重试次数
-#         save_last_try=True)
-#     runner.run(suite)
