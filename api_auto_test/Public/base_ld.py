@@ -2,6 +2,7 @@ import json,requests
 from Public.var_mex_credit import *
 from Public.dataBase_ld import *
 from Public.heads_ld import *
+from Public.check_api import *
 import random,string,datetime
 #短信验证码，默认手机号后4位单个+5后取个位数，在逆序排列。
 def compute_code(m):
@@ -24,11 +25,53 @@ def cx_old_phoneNo():
     #print('phoneNo----',phoneNo)
     phoneNo=phoneNo[0]
     return phoneNo
+def cx_registNo_04():
+    sql = '''#查询手机号c.phone_no,c.cust_no,a.loan_no有在贷未结清
+        select c.phone_no,c.cust_no,a.loan_no from lo_loan_dtl a left join cu_cust_fee_bill_dtl b
+        on a.loan_no = b.loan_no left join cu_cust_reg_dtl c on
+        a.cust_no = c.cust_no
+        where a.before_stat='10260005' and a.after_stat='10270002' or a.after_stat='10270003'
+        order by a.inst_time desc limit 1;
+    '''
+    phone = DataBase(which_db).get_one(sql)
+    # print(phone)
+    return phone
+def cx_registNo_07():
+    sql = '''#查询无客户号的手机号
+    select a.phone_no from cu_cust_reg_dtl a where a.CUST_NO is null order by a.INST_TIME desc limit 1;'''
+    phone = DataBase(which_db).get_one(sql)
+    phone = str(phone[0])
+    return phone
+def cx_registNo_10():
+    sql = '''#查询有客户号的手机号
+    select a.phone_no from cu_cust_reg_dtl a where a.CUST_NO is not null order by a.INST_TIME desc limit 1;'''
+    phone = DataBase(which_db).get_one(sql)
+    phone = str(phone[0])
+    return phone
+#更新密码，包含了用验证码方式注册登录的步骤
+def update_pwd(phoneNo):
+    token=login_code(phoneNo)
+    headt=head_token(token)
+    data = {"phoneNo": phoneNo, "newPwd": "123456"}
+    r = requests.post(host_api + "/api/cust/pwd/update", data=json.dumps(data), headers=headt, verify=False)
+    check_api(r)
 def random_four_zm():
     st=''
     for j in range(4):  #生成4个随机英文大写字母
         st+=random.choice(string.ascii_uppercase)
     return st
+#通过密码登录，返回token
+def login_pwd(phoneNo):
+    s = huoqu_user_state(phoneNo)
+    data = {"phoneNo": phoneNo, "password": "123456", "hasPwd": s['data']['hasPwd'], "gaid": "Exception:null"}
+    r = requests.post(host_api + "/api/cust/pwd/login", data=json.dumps(data), headers=head_api, verify=False)
+    t = r.json()
+    token=t['data']['token']
+    return token
+def headtt(registNo):
+    token=login_pwd(registNo)
+    headt=head_token(token)
+    return headt
 def for_test_auth_other():
     st=random_four_zm()
     registNo=str(random.randint(8000000000,9999999999)) #10位随机数作为手机号
@@ -44,13 +87,36 @@ def for_test_auth_other():
     r=requests.post(host_api+'/api/cust/auth/cert',data=json.dumps(data0),headers=head)
     s=r.json()
     custNo=s['data']['custNo']
+    headp=head_token_payment(token)
     list=[]
     list.append(registNo)
     list.append(custNo)
     list.append(head)
+    list.append(headp)
     return list
-def login_code():
-    registNo=str(random.randint(8000000000,9999999999)) #10位随机数作为手机号
+def for_test_for_contact_other():
+    test_data = for_test_auth_other()
+    custNo = test_data[1]
+    registNo = test_data[0]
+    head = test_data[2]
+    data1 = {"certType": "WORK", "custNo": custNo}
+    r1 = requests.post(host_api + '/api/cust/auth/review', data=json.dumps(data1), headers=head)
+    data2 = {"companyAddress": "", "companyName": "", "companyPhone": "", "custNo": custNo, "income": "10870004",
+             "industry": "", "jobType": "10130006"}  # 工作收入来源
+    r2 = requests.post(host_api + '/api/cust/auth/work', data=json.dumps(data2), headers=head)
+    data3 = {"certType": "CONTACT", "custNo": custNo}
+    r3 = requests.post(host_api + '/api/cust/auth/review', data=json.dumps(data3), headers=head)
+    update_kyc_auth(registNo, custNo)
+    # work
+    auth_work(registNo, head)
+    # 抓取数据
+    auth_app_grab_data(registNo, custNo, head)
+    update_batch_log()
+    list = []
+    list.append(custNo)
+    list.append(head)
+    return list
+def login_code(registNo):
     code=compute_code(registNo)
     s=huoqu_user_state(registNo)
     data={"code": code, "hasPwd": s['data']['hasPwd'], "phoneNo": registNo}
@@ -58,10 +124,16 @@ def login_code():
     t=r.json()
     token=t['data']['token']
     head=head_token(token)
-    list=[]
-    list.append(registNo)
-    list.append(head)
-    return list
+    return head
+def login_code_f(registNo):
+    code = compute_code(registNo)
+    s = huoqu_user_state(registNo)
+    data = {"code": code, "hasPwd": s['data']['hasPwd'], "phoneNo": registNo}
+    r = requests.post(host_api + "/api/cust/login", data=json.dumps(data), headers=head_api, verify=False)
+    t = r.json()
+    token = t['data']['token']
+    head = head_token_f(token)
+    return head
 def for_apply_loan():
     test_data=for_test_auth_other()
     custNo=test_data[1]
@@ -73,63 +145,105 @@ def for_apply_loan():
     r2=requests.post(host_api+'/api/cust/auth/work',data=json.dumps(data2),headers=head)
     data3={"certType":"CONTACT","custNo":custNo}
     r3=requests.post(host_api+'/api/cust/auth/review',data=json.dumps(data3),headers=head)
-    #设备信息
-    data4={"appNo":"201","phoneNo":registNo,"dataType":"11090003","pageGet":"10000001","recordTime":"1621332187810","grabData":{"ipAddress":"2409:8162:a46:5405:1:0:107f:acec%20","ipResolveCit":"2409:8162:a46:5405:1:0:107f:acec%20",
-    "ipResolveCom":"2409:8162:a46:5405:1:0:107f:acec%20","deviceId":"a2eff92b-86cb-4614-a66c-84ae322f3adcA2:B4:74:63:FB:40LIO-AL00","imei":"a2eff92b-86cb-4614-a66c-84ae322f3adc","mac":"A2:B4:74:63:FB:40","phoneNo":registNo,"recordBehavior":"抓取设备数据","recordTime":"1621332187810","userId":custNo,"mobileBrand":"HUAWEI","mobileModel":"LIO-AL00","systemVersion":"10","otherInfo":"274b98eb5c8aed06"},"custNo":custNo}
-    #联系人
-    data5={"appNo":"201","phoneNo":registNo,"dataType":"11090002","pageGet":"10000001","recordTime":"1621332187811","grabData":{"data":
-    [{"contactName":"test","contactNo":"888 845 5666","deviceId":"a2eff92b-86cb-4614-a66c-84ae322f3adcA2:B4:74:63:FB:40LIO-AL00","imei":"a2eff92b-86cb-4614-a66c-84ae322f3adc",
-      "mac":"A2:B4:74:63:FB:40","phoneNo":registNo,"recordBehavior":"联系人列表抓取","recordTime":"1621332187811","userId":custNo},{"contactName":"test2","contactNo":"888 335 5777",
-    "deviceId":"a2eff92b-86cb-4614-a66c-84ae322f3adcA2:B4:74:63:FB:40LIO-AL00","imei":"a2eff92b-86cb-4614-a66c-84ae322f3adc","mac":"A2:B4:74:63:FB:40","phoneNo":registNo,"recordBehavior":"联系人列表抓取",
-    "recordTime":"1621332187811","userId":custNo}]},"custNo":custNo}
-    #短信内容
-    data6={"appNo":"201","phoneNo":registNo,"dataType":"11090005","pageGet":"10000001","recordTime":"1621332187836","grabData":{"data":[{"body":"【中国农业银行】您尾号8579账户05月18日17:02完成支付宝交易人民币-5000.00，余额9999999999.19。","address":"95599","date":"2021-05-18 17:02:48.863","dateSent":"2021-05-18 17:02:46.000","sender":"95599","kind":"SmsMessageKind.Received"}]},"custNo":custNo}
-    #设备信息
-    data7={"appNo":"201","phoneNo":registNo,"dataType":"11090004","pageGet":"10000001","recordTime":"1621332187838","grabData":{"latitude":"30.550366","longitude":"104.062236","deviceId":"a2eff92b-86cb-4614-a66c-84ae322f3adcA2:B4:74:63:FB:40LIO-AL00","imei":"a2eff92b-86cb-4614-a66c-84ae322f3adc","mac":"A2:B4:74:63:FB:40","phoneNo":registNo,"recordBehavior":"11000003","recordTime":"1621332187838","userId":custNo},"custNo":custNo}
-    #已安装应用
-    data8={"appNo":"201","phoneNo":registNo,"dataType":"11090001","pageGet":"10000001","recordTime":"1621332187731","grabData":{"data":[{"appName":"安全教育平台","appPackage":"com.jzzs.ParentsHelper","appVersionNo":"1.7.0","deviceId":"a2eff92b-86cb-4614-a66c-84ae322f3adcA2:B4:74:63:FB:40LIO-AL00","imei":"a2eff92b-86cb-4614-a66c-84ae322f3adc","installTime":1599480832637,"lastUpdateTime":1618934047038,"mac":"A2:B4:74:63:FB:40","phoneNo":registNo,"recordBehavior":"App列表抓取","recordTime":"1621332187731","userId":custNo}]},"custNo":custNo}
-    data0=[data4,data5,data6,data7,data8]
-    for data0 in data0:
-        r0=requests.post(host_api+'/api/common/grab/app_grab_data',data=json.dumps(data0),headers=head)  #抓取用户手机短信，通讯录，已安装app等信息
-        time.sleep(1)
-    #联系人的联系方式
-    data9={"contacts":[{"name":"test","phone":"8888455666","relationship":"10110004"},{"name":"test2","phone":"8883355777","relationship":"10110003"}],"custNo":custNo}
-    r9=requests.post(host_api+'/api/cust/auth/other/contact',data=json.dumps(data9),headers=head)#最后一步，填写2个联系人的联系方式
-    t9=r9.json()
-    update_kyc_auth(registNo,custNo)
+    # kyc
+    update_kyc_auth(registNo, custNo)
+    # work
+    auth_work(registNo, head)
+    # 抓取数据
+    auth_app_grab_data(registNo, custNo, head)
     update_batch_log()
     list=[]
     list.append(custNo)
     list.append(head)
     return list
+
+def for_test_payment():
+    #到待提现，检查账单详情
+    #cust,registNo,head,headp
+    test_data=for_test_auth_other()
+    registNo=test_data[0]
+    custNo=test_data[1]
+    head=test_data[2]
+    headp=test_data[3]
+    #kyc
+    update_kyc_auth(registNo,custNo)
+    #work
+    auth_work(registNo,head)
+    #抓取数据
+    auth_app_grab_data(registNo,custNo,head)
+    #联系人
+    t4=auth_contact(custNo,head)
+    #风控
+    risk_credit(head)
+    #查询用户的状态
+    sql1="select status from cu_cust_status_info WHERE CUST_NO='"+custNo+"';"
+    result1=DataBase(which_db).get_one(sql1)
+    if result1 is ('20040004'or "20040003"):
+        print("数据正确，不用改数！")
+    else:
+        print("要改数！")
+#抓取数据
+def auth_app_grab_data(phoneNo,custNo,headt):
+    #设备信息
+    data4={"custNo":custNo,"dataType":"11090003","grabData":{"deviceId":"28884415e8dc4bc3please open wifiSM-A5160","imei":"28884415e8dc4bc3",
+    "ipAddress":"192.168.20.100","ipResolveCit":"","ipResolveCom":"","mac":"please open wifi","mobileBrand":"samsung","mobileModel":"SM-A5160",
+    "otherInfo":"API:,30,deviceId:28884415e8dc4bc3,dield:unknown","phoneNo":phoneNo,"systemVersion":"11","userId":""},"loanNo":"",
+           "pageGet":"Contact","phoneNo":phoneNo,"recordTime":"1634898295311"}
+    #联系人
+    data5={"custNo":custNo,"dataType":"11090002","grabData":{"data":[{"contactName":"5qV0PQ","contactNo":"8293338387","deviceId":"28884415e8dc4bc3please open wifiSM-A5160",
+    "imei":"28884415e8dc4bc3","mac":"A2:B4:74:63:FB:40","phoneNo":phoneNo,"recordBehavior":"联系人列表抓取","recordTime":1634898331133,"userId":""},
+    {"contactName":"KlMwSp","contactNo":"8451760297","deviceId":"28884415e8dc4bc3please open wifiSM-A5160","imei":"28884415e8dc4bc3",
+    "mac":"A2:B4:74:63:FB:40","phoneNo":phoneNo,"recordBehavior":"联系人列表抓取","recordTime":1634898331283,"userId":""}]},"loanNo":"",
+    "pageGet":"Contact","phoneNo":phoneNo,"recordTime":"1634898388674"}
+    #短信内容
+    data6={"custNo":custNo,"dataType":"11090005","grabData":{"data":[{"address":"+525590632527","body":"[AprestamoPlus] Felicitaciones https://bit.ly/3xBJoCT",
+    "date":1634890751559,"kind":"11140002","receiver":"-1491790776","sender":"+525590632527"}]},"loanNo":"","pageGet":"Contact","phoneNo":phoneNo,
+    "recordTime":"1634898295245"}
+    #位置信息
+    data7={"custNo":custNo,"dataType":"11090004","grabData":{"deviceId":"66af3c496c59bc733a:1e:f6:81:46:daV2031A","imei":"66af3c496c59bc73",
+    "latitude":"104.062505","longitude":"30.550497","mac":"3a:1e:f6:81:46:da","phoneNo":phoneNo,"userId":""},"loanNo":"",
+    "pageGet":"Contact","phoneNo":phoneNo,"recordTime":"1635147615526"}
+    #已安装应用
+    data8={"custNo":custNo,"dataType":"11090001","grabData":{"data":[{"appName":"GBA Service","appPackage":"com.mediatek.gba","appVersionNo":"29",
+    "deviceId":"66af3c496c59bc733a:1e:f6:81:46:daV2031A","imei":"66af3c496c59bc73","installTime":"1230768000000","lastUpdateTime":"1230768000000",
+    "mac":"3a:1e:f6:81:46:da","phoneNo":phoneNo,"recordBehavior":"Contact","recordTime":1635147615405,"userId":""}]},"loanNo":"",
+    "pageGet":"Contact","phoneNo":phoneNo,"recordTime":"1635147616281"}
+    data0=[data4,data5,data6,data7,data8]
+    for data0 in data0:
+        r0=requests.post(host_api+'/api/common/grab/app_grab_data',data=json.dumps(data0),headers=headt)  #抓取用户手机设备信息，短信，通讯录，已安装app，位置信息
+        time.sleep(1)
+def auth_work(custNo,headt):
+    data1={"certType":"WORK","custNo":custNo}
+    r1=requests.post(host_api+'/api/cust/auth/review',data=json.dumps(data1),headers=headt)
+    data2={"companyAddress":"","companyName":"","companyPhone":"","custNo":custNo,"income":"10870004","industry":"","jobType":"10130006"}#工作收入来源
+    r2=requests.post(host_api+'/api/cust/auth/work',data=json.dumps(data2),headers=headt)
+
 #更新kyc认证状态及其值
 def update_kyc_auth(registNo,custNo):
-    t=str(time.time()*1000000)[:15]
-    tnum1=str(random.randrange(10000,99999))
-    tnum2=str(random.randrange(10000,99999))
-    tnum3=str(random.randrange(10000,99999))
-    inst_time=str(datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
-    sql="update cu_cust_auth_dtl set KYC_AUTH='1' WHERE CUST_NO='"+custNo+"';"  #客户认证信息明细表kyc认证状态
+    t = str(time.time() * 1000000)[:15]
+    tnum1 = str(random.randrange(10000, 99999))
+    tnum2 = str(random.randrange(10000, 99999))
+    tnum3 = str(random.randrange(10000, 99999))
+    inst_time = str(datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
+    sql = "update cu_cust_auth_dtl set KYC_AUTH='1' WHERE CUST_NO='" + custNo + "';"  # 客户认证信息明细表kyc认证状态
     DataBase(which_db).executeUpdateSql(sql)
-    sql2="INSERT INTO `mex_pdl_loan`.`cu_cust_file_dtl`(`ID`, `REGIST_NO`, `CUST_NO`, `APP_NO`, `BUSI_TYPE`, `SAVE_ATT_NAME`, `UPLOAD_ATT_NAME`, `ATT_TYPE`, `ATT_FILE`, `ATT_SIZE`, `PH_PATH`, `IN_PATH`, `REMARK`, `INST_TIME`, `INST_USER_NO`, `UPDT_TIME`, `UPDT_USER_NO`) VALUES ('"+t+'b88f206222e0'+tnum1+"', '"+registNo+"', '"+custNo+"', '201', '10070001', '100700011621408803787.jpg', '100700011621408803787.jpg', NULL, '.jpg', '307350', '201/20210519/9999990000/', NULL, NULL, '"+inst_time+"', 'sys', NULL, NULL);"
-    sql3="INSERT INTO `mex_pdl_loan`.`cu_cust_file_dtl`(`ID`, `REGIST_NO`, `CUST_NO`, `APP_NO`, `BUSI_TYPE`, `SAVE_ATT_NAME`, `UPLOAD_ATT_NAME`, `ATT_TYPE`, `ATT_FILE`, `ATT_SIZE`, `PH_PATH`, `IN_PATH`, `REMARK`, `INST_TIME`, `INST_USER_NO`, `UPDT_TIME`, `UPDT_USER_NO`) VALUES ('"+t+'b88f206222e0'+tnum2+"', '"+registNo+"', '"+custNo+"', '201', '10070002', '100700021621408806923.jpg', '100700021621408806923.jpg', NULL, '.jpg', '317778', '201/20210519/9999990000/', NULL, NULL, '"+inst_time+"', 'sys', NULL, NULL);"
-    sql4="INSERT INTO `mex_pdl_loan`.`cu_cust_file_dtl`(`ID`, `REGIST_NO`, `CUST_NO`, `APP_NO`, `BUSI_TYPE`, `SAVE_ATT_NAME`, `UPLOAD_ATT_NAME`, `ATT_TYPE`, `ATT_FILE`, `ATT_SIZE`, `PH_PATH`, `IN_PATH`, `REMARK`, `INST_TIME`, `INST_USER_NO`, `UPDT_TIME`, `UPDT_USER_NO`) VALUES ('"+t+'b88f206222e0'+tnum3+"', '"+registNo+"', '"+custNo+"', '201', '10070004', '100700041621408812009.jpg', '100700041621408812009.jpg', NULL, '.jpg', '190855', '201/20210519/9999990000/', NULL, NULL, '"+inst_time+"', 'sys', NULL, NULL);"
+    appNo='208'
+    sql2 = "INSERT INTO `mex_credit`.`cu_cust_file_dtl`(`ID`, `PHONE_NO`, `CUST_NO`, `APP_NO`, `BUSI_TYPE`, `SAVE_ATT_NAME`, `UPLOAD_ATT_NAME`, `ATT_TYPE`, `ATT_FILE`, `ATT_SIZE`, `PH_PATH`, `IN_PATH`, `REMARK`, `INST_TIME`, `INST_USER_NO`, `UPDT_TIME`, `UPDT_USER_NO`) VALUES ('" + t + 'b88f206222e0' + tnum1 + "', '" + registNo + "', '" + custNo + "','" + appNo + "', '10070001', '100700011634108027823.jpg', '100700011634108027823.jpg', NULL, '.jpg', '307350', '" + appNo + "/20211013/8712976528/', NULL, NULL, '" + inst_time + "', 'sys', NULL, NULL);"
+    sql3 = "INSERT INTO `mex_credit`.`cu_cust_file_dtl`(`ID`, `PHONE_NO`, `CUST_NO`, `APP_NO`, `BUSI_TYPE`, `SAVE_ATT_NAME`, `UPLOAD_ATT_NAME`, `ATT_TYPE`, `ATT_FILE`, `ATT_SIZE`, `PH_PATH`, `IN_PATH`, `REMARK`, `INST_TIME`, `INST_USER_NO`, `UPDT_TIME`, `UPDT_USER_NO`) VALUES ('" + t + 'b88f206222e0' + tnum2 + "', '" + registNo + "', '" + custNo + "','" + appNo + "', '10070002', '100700021634108040427.jpg', '100700021634108040427.jpg', NULL, '.jpg', '317778',  '" + appNo + "/20211013/8712976528/', NULL, NULL, '" + inst_time + "', 'sys', NULL, NULL);"
+    sql4 = "INSERT INTO `mex_credit`.`cu_cust_file_dtl`(`ID`, `PHONE_NO`, `CUST_NO`, `APP_NO`, `BUSI_TYPE`, `SAVE_ATT_NAME`, `UPLOAD_ATT_NAME`, `ATT_TYPE`, `ATT_FILE`, `ATT_SIZE`, `PH_PATH`, `IN_PATH`, `REMARK`, `INST_TIME`, `INST_USER_NO`, `UPDT_TIME`, `UPDT_USER_NO`) VALUES ('" + t + 'b88f206222e0' + tnum3 + "', '" + registNo + "', '" + custNo + "','" + appNo + "', '10070004', '100700041634108052112.jpg', '100700041634108052112.jpg', NULL, '.jpg', '190855',  '" + appNo + "/20211013/8712976528/', NULL, NULL, '" + inst_time + "', 'sys', NULL, NULL);"
     DataBase(which_db).executeUpdateSql(sql2)
     DataBase(which_db).executeUpdateSql(sql3)
     DataBase(which_db).executeUpdateSql(sql4)
-def for_bank_auth():
-    test_data=for_apply_loan()
-    custNo=test_data[0]
-    head=test_data[1]
-    data10={"custNo":custNo}
-    r=requests.post(host_api+'/api/loan/apply',data=json.dumps(data10),headers=head)
-    t=r.json()
-    loanNo=t['data']['loanNo']
-    list=[]
-    list.append(custNo)
-    list.append(head)
-    list.append(loanNo)
-    return list
+# 第四个页面，其他联系人信息页面
+def auth_contact(custNo,headt):
+    #data9={"contacts":[{"name":"test","phone":"8888455666","relationship":"10110004"},{"name":"test2","phone":"8883355777","relationship":"10110003"}],"custNo":custNo}
+    data9={"custNo":custNo,"contacts":[{"custNo":custNo,"name":"test1","phone":"123333","relationship":"10110004","relationshipName":"Hermanos"},{"custNo":custNo,"name":"test2","phone":"543212601","relationship":"10110001","relationshipName":"Padres"}]}
+    r9=requests.post(host_api+'/api/cust/auth/other/contact',data=json.dumps(data9),headers=headt)#最后一步，填写2个联系人的联系方式
+    return r9.json()
+#风控授信调度接口
+def risk_credit(headt):
+    print("调用风控授信接口")
+    r = requests.post(host_api+'/api/task/risk/credit',headers=headt)
 #当前时间的前一天=跑批业务日期，才能正常申请借款
 def update_batch_log():
     sql='select now();'
@@ -145,5 +259,6 @@ def update_batch_log():
         sql3="update sys_batch_log set BUSI_DATE='"+yudate+"' where BUSI_DATE='"+BUSI_DATE[0]+"';"
         DataBase(which_db).executeUpdateSql(sql3)
     DataBase(which_db).closeDB()
+
 if __name__ == '__main__':
-    cx_old_phoneNo()
+    cx_registNo_04()
