@@ -1,9 +1,10 @@
-__all__=['host_api','host_action','host_mgt','head_api','head_mgt','head_pay','CONFIGS','which_db']
+__all__=['host_api','host_action','host_mgt','host_pay','head_api','head_mgt','head_pay','CONFIGS','which_db']
 
 which_db='mex_credit'
 host_api="https://test-api.lanadigital.mx"
 host_action="https://test-action.lanadigital.mx"
 host_mgt="https://test-mgt.lanadigital.mx/"
+host_pay="https://test-pay.lanadigital.mx"
 head_api={"user-agent": "Dart/2.12 (dart:io)","x-user-language": "es","x-auth-token": "Bearer" ,"accept-encoding": "gzip","content-length": "63","host": "test-api.lanadigital.mx","x-app-name": "LanaDigital","content-type": "application/json",
         "x-app-type": "10090001","x-app-version": "116","x-app-no": "208" }
 
@@ -25,6 +26,7 @@ CONFIGS = {
 host_api=host_api
 host_action=host_action
 host_mgt=host_mgt
+host_pay=host_pay
 head_api=head_api
 head_mgt=head_mgt
 head_pay=head_pay

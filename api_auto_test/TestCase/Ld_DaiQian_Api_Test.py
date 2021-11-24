@@ -177,6 +177,7 @@ class DaiQian_Api_Test(unittest.TestCase):
         '''【LanaDigital】/api/cust/auth/bank绑定银行卡接口(有在贷不能更换银行卡)-正案例'''
         list = cx_registNo_04()
         registNo = list[0]
+        # print(registNo)
         custNo = list[1]
         headt_api = login_code(registNo)
         data = {"bankCode": "10020037", "clabe": "138455214411441118", "custNo": custNo}

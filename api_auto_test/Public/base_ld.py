@@ -18,12 +18,12 @@ def huoqu_user_state(registNo):
     data1 = {"registNo": registNo}
     q = requests.post(host_api + "/api/cust/check/user/state", data=json.dumps(data1), headers=head_api, verify=False)
     return q.json()
-#查询客户号不为空的用户手机号，GAID='Exception:null'我的标记数据
 def cx_old_phoneNo():
-    sql="select PHONE_NO from cu_cust_reg_dtl where CUST_NO is not null and GAID='Exception:null' ORDER BY INST_TIME desc;"
+    sql = '''#查询客户号不为空的用户手机号
+    select PHONE_NO from cu_cust_reg_dtl where CUST_NO is not null and GAID='Exception:null' ORDER BY INST_TIME desc;'''
     phoneNo=DataBase(which_db).get_one(sql)
     #print('phoneNo----',phoneNo)
-    phoneNo=phoneNo[0]
+    phoneNo=str(phoneNo[0])
     return phoneNo
 def cx_registNo_04():
     sql = '''#查询手机号c.phone_no,c.cust_no,a.loan_no有在贷未结清
@@ -32,9 +32,14 @@ def cx_registNo_04():
         where a.before_stat='10260005' and a.after_stat='10270002' or a.after_stat='10270003'
         order by a.inst_time desc limit 1;
     '''
-    phone = DataBase(which_db).get_one(sql)
-    # print(phone)
-    return phone
+    tt = DataBase(which_db).get_one(sql)
+    # print(tt)
+    phone = str(tt[0])
+    cust_no=str(tt[1])
+    list=[]
+    list.append(phone)
+    list.append(cust_no)
+    return list
 def cx_registNo_07():
     sql = '''#查询无客户号的手机号
     select a.phone_no from cu_cust_reg_dtl a where a.CUST_NO is null order by a.INST_TIME desc limit 1;'''
@@ -47,14 +52,43 @@ def cx_registNo_10():
     phone = DataBase(which_db).get_one(sql)
     phone = str(phone[0])
     return phone
-def lay_registNo_1():
-    sql = '''#查询进入延迟放款的的手机号
+def lay_registNo():
+    sql = '''#查询进入延迟放款的用户
         select phone_No from cu_cust_reg_dtl c left join lo_loan_payout_dtl l on c.CUST_NO=l.CUST_NO 
         where l.ORDER_STATUS='10420005' order by c.INST_TIME desc limit 1;'''
     phone = DataBase(which_db).get_one(sql)
     phone = str(phone[0])
-    print(phone)
+    #print(phone)
     return phone
+def payout_stp_data():
+    sql = '''#查询能够放款成功的用户
+        select p.TRAN_NO,p.TRAN_ORDER_NO,c.PHONE_NO from cu_cust_reg_dtl c left join cu_cust_bank_card_dtl b on c.CUST_NO=b.CUST_NO
+        left join pay_tran_dtl p on p.IN_ACCT_NO=b.BANK_ACCT_NO
+        where p.TRAN_STAT='10220002' ORDER BY p.INST_TIME desc limit 1;'''
+    data = DataBase(which_db).get_one(sql)
+    folioOrigen = str(data[0])
+    id = str(data[1])
+    phone = str(data[2])
+    list = []
+    list.append(folioOrigen)
+    list.append(id)
+    list.append(phone)
+    # print(list)
+    return list
+def repay_data():
+    sql = '''#查询能够还款的用户
+        select a.CUST_NO,c.PHONE_NO from cu_cust_reg_dtl c left join cu_cust_account_dtl a on c.CUST_NO=a.CUST_NO 
+        left join fin_ad_dtl f on f.ACCOUNT_NO = a.ACCOUNT_NO
+        GROUP BY f.RECEIVE_AMT HAVING sum(f.RECEIVE_AMT>0) 
+        ORDER BY a.INST_TIME desc limit 1;'''
+    data = DataBase(which_db).get_one(sql)
+    cust_no= str(data[0])
+    phone = str(data[1])
+    list = []
+    list.append(cust_no)
+    list.append(phone)
+    # print(list)
+    return list
 #更新密码，包含了用验证码方式注册登录的步骤
 def update_pwd(phoneNo):
     token=login_code(phoneNo)
@@ -268,4 +302,5 @@ def update_batch_log():
     DataBase(which_db).closeDB()
 
 if __name__ == '__main__':
-    cx_registNo_04()
+    #cx_registNo_04()
+    compute_code("8294644162")
