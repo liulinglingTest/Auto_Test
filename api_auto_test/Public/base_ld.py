@@ -53,6 +53,7 @@ def lay_registNo_1():
         where l.ORDER_STATUS='10420005' order by c.INST_TIME desc limit 1;'''
     phone = DataBase(which_db).get_one(sql)
     phone = str(phone[0])
+    print(phone)
     return phone
 #更新密码，包含了用验证码方式注册登录的步骤
 def update_pwd(phoneNo):
