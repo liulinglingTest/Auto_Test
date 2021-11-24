@@ -28,8 +28,7 @@ def cx_old_phoneNo():
 def cx_registNo_04():
     sql = '''#查询手机号c.phone_no,c.cust_no,a.loan_no有在贷未结清
         select c.phone_no,c.cust_no,a.loan_no from lo_loan_dtl a left join cu_cust_fee_bill_dtl b
-        on a.loan_no = b.loan_no left join cu_cust_reg_dtl c on
-        a.cust_no = c.cust_no
+        on a.loan_no = b.loan_no left join cu_cust_reg_dtl c on a.cust_no = c.cust_no
         where a.before_stat='10260005' and a.after_stat='10270002' or a.after_stat='10270003'
         order by a.inst_time desc limit 1;
     '''
@@ -45,6 +44,13 @@ def cx_registNo_07():
 def cx_registNo_10():
     sql = '''#查询有客户号的手机号
     select a.phone_no from cu_cust_reg_dtl a where a.CUST_NO is not null order by a.INST_TIME desc limit 1;'''
+    phone = DataBase(which_db).get_one(sql)
+    phone = str(phone[0])
+    return phone
+def lay_registNo_1():
+    sql = '''#查询进入延迟放款的的手机号
+        select phone_No from cu_cust_reg_dtl c left join lo_loan_payout_dtl l on c.CUST_NO=l.CUST_NO 
+        where l.ORDER_STATUS='10420005' order by c.INST_TIME desc limit 1;'''
     phone = DataBase(which_db).get_one(sql)
     phone = str(phone[0])
     return phone

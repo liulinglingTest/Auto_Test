@@ -62,7 +62,7 @@ class DataBase():
         self.closeDB()
     def call_4_proc(self):
         for i in range(2):
-            DataBase('mex_pdl_loan').call_many_proc()
+            DataBase('mex_credit').call_many_proc()
             time.sleep(1)
 #loanAmt='{0:f}'.format(t[0])#decimal转字符串
 

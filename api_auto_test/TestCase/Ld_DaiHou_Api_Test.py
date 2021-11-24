@@ -16,8 +16,8 @@ class DaiHou_Api_Test(unittest.TestCase):
         '''【LanaDigital】/api/credit/payment用户提现接口-正案例'''
     def test_credit_payment_delay(self):
         '''【LanaDigital】/api/credit/payment/delay_payout_handler用户提现(延迟放款)接口-正案例'''
-        test_data = for_test_auth_other()
-        head = test_data[2]
+        phone=lay_registNo_1()
+        head=login_code(phone)
         r = requests.post(host_api + '/api/credit/payment/delay_payout_handler', headers=head)
         self.assertEqual(r.status_code, 200)
     def test_payment_detail(self):
