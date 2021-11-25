@@ -20,7 +20,7 @@ class DaiHou_Api_Test(unittest.TestCase):
         '''【LanaDigital】/api/credit/payment/anon/delay_payout_handler用户提现(延迟放款)接口-正案例'''
         phone=lay_registNo()
         head=login_code(phone)
-        t = requests.post(host_api + '/api/credit/payment/anon/delay_payout_handler', headers=head)
+        t = requests.post(host_api + '/api/credit/payment/anon/delay_payout_handler', headers=head,verify=False)
         # print(t)
         self.assertEqual(t.status_code,200)
     def test_payout_stp_1(self):
@@ -56,7 +56,7 @@ class DaiHou_Api_Test(unittest.TestCase):
         '''【LanaDigital】/api/credit/repayment/bill账单详情接口-正案例'''
         text_data = repay_data()
         headt_api = login_code(text_data[1])
-        r = requests.get(host_api + '/api/credit/repayment/bill', headers=headt_api)
+        r = requests.get(host_api + '/api/credit/repayment/bill', headers=headt_api,verify=False)
         t = r.json()
         # print(t)
         self.assertEqual(t['errorCode'], 0)
@@ -74,7 +74,7 @@ class DaiHou_Api_Test(unittest.TestCase):
         text_data = repay_data()
         cust_no = text_data[0]
         headt_api = login_code(text_data[1])
-        r = requests.post(host_api + '/api/credit/repayment/repay/methods/' + cust_no, headers=headt_api)
+        r = requests.post(host_api + '/api/credit/repayment/repay/methods/' + cust_no, headers=headt_api,verify=False)
         t = r.json()
         # print(t)
         self.assertEqual(t['errorCode'], 0)

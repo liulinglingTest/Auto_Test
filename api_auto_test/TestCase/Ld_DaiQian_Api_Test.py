@@ -67,7 +67,7 @@ class DaiQian_Api_Test(unittest.TestCase):
         head = login_code(registNo)
         data={"birthdate":"1998-11-18","civilStatus":"10050002","civilStatusName":"Soltero","curp":st+"981118MM"+st+"V8","delegationOrMunicipality":"zxcvbbbccxxx","education":"10190002","educationName":"Primaria","fatherLastName":"WANG","gender":"10030000",
               "genderName":"Mujer","motherLastName":"LIU","name":"SHUANG","outdoorNumber":"qweetyyu","phoneNo":registNo,"postalCode":"55555","state":"11130001","street":"444444","suburb":"asdfhhj"}
-        r=requests.post(host_api+'/api/cust/auth/cert',data=json.dumps(data),headers=head)
+        r=requests.post(host_api+'/api/cust/auth/cert',data=json.dumps(data),headers=head,verify=False)
         s=r.json()
         custNo=s['data']['custNo']
         self.assertEqual(s['errorCode'],0)
@@ -81,7 +81,7 @@ class DaiQian_Api_Test(unittest.TestCase):
         custNo=test_data[1]
         head=test_data[2]
         data={"certType":"WORK","custNo":custNo}
-        r1=requests.post(host_api+'/api/cust/auth/review',data=json.dumps(data),headers=head)
+        r1=requests.post(host_api+'/api/cust/auth/review',data=json.dumps(data),headers=head,verify=False)
         s1=r1.json()
         self.assertEqual(s1['errorCode'],0)
     def test_auth_kycStat(self):
@@ -92,7 +92,7 @@ class DaiQian_Api_Test(unittest.TestCase):
         head=test_data[2]
         update_kyc_auth(phone,custNo)
         data={"custNo":custNo}
-        r=requests.post(host_api+'/api/cust/auth/kyc/stat',data=json.dumps(data),headers=head)
+        r=requests.post(host_api+'/api/cust/auth/kyc/stat',data=json.dumps(data),headers=head,verify=False)
         s=r.json()
         self.assertEqual(s['errorCode'],0)
     def test_auth_work(self):
@@ -101,7 +101,7 @@ class DaiQian_Api_Test(unittest.TestCase):
         custNo=test_data[1]
         head=test_data[2]
         data={"companyAddress":"","companyName":"","companyPhone":"","custNo":custNo,"income":"10870004","industry":"","jobType":"10130006"}#工作收入来源
-        r=requests.post(host_api+'/api/cust/auth/work',data=json.dumps(data),headers=head)
+        r=requests.post(host_api+'/api/cust/auth/work',data=json.dumps(data),headers=head,verify=False)
         s=r.json()
         self.assertEqual(s['errorCode'],0)
         self.assertEqual(s['data']['authSuccess'],True)
@@ -140,7 +140,7 @@ class DaiQian_Api_Test(unittest.TestCase):
         "pageGet":"Contact","phoneNo":phoneNo,"recordTime":"1635147616281"}
         data0=[data1,data2,data3,data4,data5]
         for data0 in data0:
-            r0=requests.post(host_api+'/api/common/grab/app_grab_data',data=json.dumps(data0),headers=head)  #抓取用户手机短信，通讯录，已安装app等信息
+            r0=requests.post(host_api+'/api/common/grab/app_grab_data',data=json.dumps(data0),headers=head,verify=False)  #抓取用户手机短信，通讯录，已安装app等信息
             t0=r0.json()
             self.assertEqual(t0['errorCode'],0)
             time.sleep(1)
@@ -153,7 +153,7 @@ class DaiQian_Api_Test(unittest.TestCase):
         # sql = "UPDATE cu_cust_auth_dtl set cert_auth='1', kyc_auth = '1', work_auth = '1' WHERE CUST_NO='"+custNo+"';"
         # DataBase(which_db).executeUpdateSql(sql)
         data={"custNo":custNo,"contacts":[{"custNo":custNo,"name":"Advance Talktime","phone":"52141","relationship":"10110004","relationshipName":"Hermanos"},{"custNo":custNo,"name":"Cricket","phone":"543212601","relationship":"10110001","relationshipName":"Padres"}]}
-        r=requests.post(host_api+'/api/cust/auth/other/contact',data=json.dumps(data),headers=head)#最后一步，填写2个联系人的联系方式
+        r=requests.post(host_api+'/api/cust/auth/other/contact',data=json.dumps(data),headers=head,verify=False)#最后一步，填写2个联系人的联系方式
         t=r.json()
         # print(t)
         self.assertEqual(t['errorCode'],0)
@@ -167,7 +167,7 @@ class DaiQian_Api_Test(unittest.TestCase):
         custNo = test_data[0]
         head = test_data[1]
         data={"bankCode":"10020008","bankCodeName":"BBVA BANCOMER","clabe":"012121212121212128","custNo":custNo}
-        r=requests.post(host_api+'/api/cust/auth/bank',data=json.dumps(data),headers=head)
+        r=requests.post(host_api+'/api/cust/auth/bank',data=json.dumps(data),headers=head,verify=False)
         self.assertEqual(r.status_code,200)
         t=r.json()
         self.assertEqual(t['errorCode'],0)                                    #改为4位随机数
@@ -181,7 +181,7 @@ class DaiQian_Api_Test(unittest.TestCase):
         custNo = list[1]
         headt_api = login_code(registNo)
         data = {"bankCode": "10020037", "clabe": "138455214411441118", "custNo": custNo}
-        r = requests.post(host_api + '/api/cust/auth/bank', data=json.dumps(data), headers=headt_api)
+        r = requests.post(host_api + '/api/cust/auth/bank', data=json.dumps(data), headers=headt_api,verify=False)
         t = r.json()
         self.assertEqual(t['errorCode'], 30001)
         self.assertEqual(t['message'],'Su préstamo no ha sido liquidado y CLABE no se puede modificar temporalmente. Modifíquelo después de que se complete el pago.')
@@ -190,7 +190,7 @@ class DaiQian_Api_Test(unittest.TestCase):
         registNo = cx_registNo_07()
         headt_api = login_code(registNo)
         data = {"bankCode": "10020037", "clabe": "138455214411441118", "custNo": ''}
-        r = requests.post(host_api + '/api/cust/auth/bank', data=json.dumps(data), headers=headt_api)
+        r = requests.post(host_api + '/api/cust/auth/bank', data=json.dumps(data), headers=headt_api,verify=False)
         t = r.json()
         # print(t)
         self.assertEqual(t['errorCode'], 30001)
@@ -202,7 +202,7 @@ class DaiQian_Api_Test(unittest.TestCase):
         custNo='C2082111048144516475940700160'
         files={'custNo':(None,custNo),'phoneNo':(None,registNo),'feedbackDesc':(None,'test123456789'),'feedbackType':(None,'11110003'),'feedbackPage':(None,'CLABE'),
                'feedbackOption':(None,'No sé cuál es mi cuenta CLABE'),'imgs':('key.png',open(r'D:\pic\app.png', 'rb'),'text/plain')}
-        r=requests.post(host_api+"/api/hook/feedback",files=files,headers=headt_api_f)
+        r=requests.post(host_api+"/api/hook/feedback",files=files,headers=headt_api_f,verify=False)
         t=r.json()
         # print(t)
         self.assertEqual(t['errorCode'],0)
@@ -210,13 +210,13 @@ class DaiQian_Api_Test(unittest.TestCase):
         '''【LanaDigital】/api/task/risk/credit风控授信接口-正案例'''
         test_data=for_test_auth_other()
         head=test_data[2]
-        r=requests.post(host_api+'/api/task/risk/credit', headers=head)
+        r=requests.post(host_api+'/api/task/risk/credit', headers=head,verify=False)
         self.assertEqual(r.status_code,200)
     def test_bank_codes(self):
         '''【LanaDigital】/api/common/bank/codes获取银行卡码值及前缀接口-正案例'''
         registNo=cx_registNo_10()
         headt_api=login_code(registNo)
-        r=requests.get(host_api+"/api/common/bank/codes",headers=headt_api)
+        r=requests.get(host_api+"/api/common/bank/codes",headers=headt_api,verify=False)
         t=r.json()
         # print(t)
         self.assertEqual(t['errorCode'],0)
@@ -225,7 +225,7 @@ class DaiQian_Api_Test(unittest.TestCase):
         '''【LanaDigital】/api/common/feedback/codes获取feedback码值接口-正案例'''
         registNo = cx_registNo_10()
         headt_api = login_code(registNo)
-        r = requests.get(host_api + "/api/common/feedback/codes", headers=headt_api)
+        r = requests.get(host_api + "/api/common/feedback/codes", headers=headt_api,verify=False)
         t = r.json()
         self.assertEqual(t['errorCode'], 0)
         self.assertEqual(str(t['data']),"[{'valName': 'Acosado', 'valCode': '11110001', 'options': ['Me acosaron por mensajes de WhatsApp.', 'Me acosaron por mensajes de texto.', 'Me acosaron por una llamada telefónica.']}, {'valName': 'Aprobación es demasiado largo', 'valCode': '11110002', 'options': ['El tiempo de aprobación es demasiado largo.']}, {'valName': 'CLABE', 'valCode': '11110003', 'options': ['No sé cuál es mi cuenta CLABE.', 'Quiero cambiar mi cuenta CLABE.']}, {'valName': 'CURP', 'valCode': '11110004', 'options': ['La CURP marca error.', 'Necesito ayuda para completar la CURP.']}, {'valName': 'Depósito', 'valCode': '11110005', 'options': ['Apareció un error de limitación en la parte superior de la página.', 'He pagado pero el estatus no se ha actualizado.', 'La cuenta que ha pagado marca error.', 'No recibí el depósito.', 'Pagos múltiples.']}, {'valName': 'El tiempo de carga es demasiado largo', 'valCode': '11110007', 'options': ['Carga lenta en la página de inicio.', 'Carga prolongada de la página de pago']}, {'valName': 'Error de red', 'valCode': '11110006', 'options': ['Apareció un error de [01] en la parte superior de la página.', 'Apareció un error de [02] en la parte superior de la página.', 'Apareció un error de [03] en la parte superior de la página.', 'Apareció un error de [04] en la parte superior de la página.']}, {'valName': 'Foto', 'valCode': '11110008', 'options': ['Informar un error después de cargar la foto.', 'La cámara funciona mal y deseo cargar fotos.', 'No se pudo cargar la foto.']}, {'valName': 'INE', 'valCode': '11110009', 'options': ['Informe del error después de cargar el INE.', 'No se pudo cargar el INE.', 'Reemplace la credencial INE.', 'Sin credencial de INE / perdida', 'Sin credencial física INE, quiero subir fotos.']}, {'valName': 'Monto del préstamo', 'valCode': '11110011', 'options': ['Quiero elegir el monto del préstamo que más me convenga por mí mismo.', 'Quiero un monto de préstamo mayor.', 'Quiero una cantidad de préstamo menor.']}, {'valName': 'Otros', 'valCode': '11110012', 'options': ['Otros.']}, {'valName': 'Sorteo', 'valCode': '11110013', 'options': ['Gané el sorteo, pero no obtuve el premio.']}, {'valName': 'Teléfono', 'valCode': '11110014', 'options': ['Cambiar el número de teléfono móvil.', 'Error al registrar el número de teléfono móvil.', 'Número de teléfono incompatible.']}]")
@@ -233,7 +233,7 @@ class DaiQian_Api_Test(unittest.TestCase):
         '''【LanaDigital】/api/common/code/STATE获取州列表接口-正案例'''
         registNo = cx_registNo_07()
         headt_api = login_code(registNo)
-        r = requests.get(host_api + '/api/common/code/STATE', headers=headt_api)
+        r = requests.get(host_api + '/api/common/code/STATE', headers=headt_api,verify=False)
         t = r.json()
         # print(t)
         self.assertEqual(t['errorCode'], 0)
@@ -243,7 +243,7 @@ class DaiQian_Api_Test(unittest.TestCase):
         '''【LanaDigital】/api/common/code/MARRIAGE获取婚姻码值接口-正案例'''
         registNo = cx_registNo_07()
         headt_api = login_code(registNo)
-        r = requests.get(host_api + '/api/common/code/MARRIAGE', headers=headt_api)
+        r = requests.get(host_api + '/api/common/code/MARRIAGE', headers=headt_api,verify=False)
         t = r.json()
         #print(t)
         self.assertEqual(t['errorCode'], 0)
@@ -252,7 +252,7 @@ class DaiQian_Api_Test(unittest.TestCase):
         '''【LanaDigital】/api/common/code/CONTACT_TYPE获取联系人类型码值接口-正案例'''
         registNo = cx_registNo_07()
         headt_api = login_code(registNo)
-        r = requests.get(host_api + '/api/common/code/CONTACT_TYPE', headers=headt_api)
+        r = requests.get(host_api + '/api/common/code/CONTACT_TYPE', headers=headt_api,verify=False)
         t = r.json()
         # print(t)
         self.assertEqual(t['errorCode'], 0)
@@ -261,7 +261,7 @@ class DaiQian_Api_Test(unittest.TestCase):
         '''【LanaDigital】/api/common/code/EDUCATION获取教育类型码值接口-正案例'''
         registNo = cx_registNo_07()
         headt_api = login_code(registNo)
-        r = requests.get(host_api + '/api/common/code/EDUCATION', headers=headt_api)
+        r = requests.get(host_api + '/api/common/code/EDUCATION', headers=headt_api,verify=False)
         t = r.json()
         # print(t)
         self.assertEqual(t['errorCode'], 0)
@@ -270,7 +270,7 @@ class DaiQian_Api_Test(unittest.TestCase):
         '''【LanaDigital】/api/common/code/JOB_TYPE获取工作类型码值接口-正案例'''
         registNo = cx_registNo_07()
         headt_api = login_code(registNo)
-        r = requests.get(host_api + '/api/common/code/JOB_TYPE', headers=headt_api)
+        r = requests.get(host_api + '/api/common/code/JOB_TYPE', headers=headt_api,verify=False)
         t = r.json()
         # print(t)
         self.assertEqual(t['errorCode'], 0)
@@ -279,7 +279,7 @@ class DaiQian_Api_Test(unittest.TestCase):
         '''【LanaDigital】/api/common/code/INCOME获取收入码值接口-正案例'''
         registNo = cx_registNo_07()
         headt_api = login_code(registNo)
-        r = requests.get(host_api + '/api/common/code/INCOME', headers=headt_api)
+        r = requests.get(host_api + '/api/common/code/INCOME', headers=headt_api,verify=False)
         t = r.json()
         # print(t)
         self.assertEqual(t['errorCode'], 0)
@@ -288,7 +288,7 @@ class DaiQian_Api_Test(unittest.TestCase):
         '''【LanaDigital】/api/common/code/INDUSTRY获取行业码值接口-正案例'''
         registNo = cx_registNo_07()
         headt_api = login_code(registNo)
-        r = requests.get(host_api + '/api/common/code/INDUSTRY', headers=headt_api)
+        r = requests.get(host_api + '/api/common/code/INDUSTRY', headers=headt_api,verify=False)
         t = r.json()
         # print(t)
         self.assertEqual(t['errorCode'], 0)
@@ -297,7 +297,7 @@ class DaiQian_Api_Test(unittest.TestCase):
         '''【LanaDigital】/api/common/code/FILE_TYPE获取文件类型码值接口-正案例'''
         registNo = cx_registNo_07()
         headt_api = login_code(registNo)
-        r = requests.get(host_api + '/api/common/code/FILE_TYPE', headers=headt_api)
+        r = requests.get(host_api + '/api/common/code/FILE_TYPE', headers=headt_api,verify=False)
         t = r.json()
         # print(t)
         self.assertEqual(t['errorCode'], 0)
