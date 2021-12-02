@@ -200,11 +200,11 @@ class DaiQian_Api_Test(unittest.TestCase):
         registNo='1166777777'
         headt_api_f=login_code_f(registNo)
         custNo='C2082111048144516475940700160'
-        files={'custNo':(None,custNo),'phoneNo':(None,registNo),'feedbackDesc':(None,'test123456789'),'feedbackType':(None,'11110003'),'feedbackPage':(None,'CLABE'),
-               'feedbackOption':(None,'No sé cuál es mi cuenta CLABE'),'imgs':('key.png',open(r'D:\pic\app.png', 'rb'),'text/plain')}
+        files={'custNo':(None,custNo),'phoneNo':(None,registNo),'feedbackDesc':(None,'test-test'),'feedbackType':(None,'11110003'),'feedbackPage':(None,'CLABE'),
+               'feedbackOption':(None,'No sé cuál es mi cuenta CLABE'),'imgs':('key.png',open(r'D:\pic\app.jpg', 'rb'),'text/plain')}
         r=requests.post(host_api+"/api/hook/feedback",files=files,headers=headt_api_f,verify=False)
         t=r.json()
-        # print(t)
+        print(t)
         self.assertEqual(t['errorCode'],0)
     def test_risk_credit(self):
         '''【LanaDigital】/api/task/risk/credit风控授信接口-正案例'''
