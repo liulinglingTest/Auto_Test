@@ -13,15 +13,15 @@ class DaiQian_Api_Test(unittest.TestCase):
         print('teardown_test')
     def test_check_user_stat(self): #函数名要以test开头，否则不会被执行
         '''【LanaDigital】/api/cust/check/user/state检查用户状态接口(是否已设置密码)-正案例'''  #用例描述，在函数下，用三个单引号里面写用例描述
-        registNo=str(random.randint(8000000000, 9999999999))  # 10位随机数作为手机号
-        data1={"registNo": registNo}
-        r=requests.post(host_api + "/api/cust/check/user/state", data=json.dumps(data1), headers=head_api, verify=False)
-        t=r.json()
+        registNo = str(random.randint(8000000000, 9999999999))  # 10位随机数作为手机号
+        data1 = {"registNo": registNo}
+        r = requests.post(host_api + "/api/cust/check/user/state", data=json.dumps(data1), headers=head_api, verify=False)
+        t = r.json()
         #print(t)
         self.assertEqual(t['errorCode'],0)
         self.assertFalse(t['data']['hasPwd'])
-        phone='9224250993'  #已设置密码
-        data2={"registNo": phone}
+        phone = '9224250993'  #已设置密码
+        data2 = {"registNo": phone}
         r = requests.post(host_api + "/api/cust/check/user/state", data=json.dumps(data2), headers=head_api, verify=False)
         t = r.json()
         # print(t)
@@ -29,132 +29,132 @@ class DaiQian_Api_Test(unittest.TestCase):
         self.assertTrue(t['data']['hasPwd'])
     def test_login_code(self):
         '''【LanaDigital】/api/cust/login注册登录接口-正案例'''
-        registNo=str(random.randint(8000000000,9999999999)) #10位随机数作为手机号
+        registNo = str(random.randint(8000000000,9999999999)) #10位随机数作为手机号
         '''/api/cust/check/user/state获取用户状态'''
-        s=huoqu_user_state(registNo)
-        code=compute_code(registNo)
-        data={"code":code,"hasPwd":s['data']['hasPwd'],"phoneNo":registNo,"gaid":"Exception:null"}
-        r=requests.post(host_api+"/api/cust/login",data=json.dumps(data),headers=head_api,verify=False)
+        s = huoqu_user_state(registNo)
+        code = compute_code(registNo)
+        data = {"code":code,"hasPwd":s['data']['hasPwd'],"phoneNo":registNo,"gaid":"Exception:null"}
+        r = requests.post(host_api+"/api/cust/login",data=json.dumps(data),headers=head_api,verify=False)
         self.assertEqual(r.status_code,200)
-        t=r.json()
-        token=t['data']['token']
+        t = r.json()
+        token = t['data']['token']
         self.assertIsNotNone(token)
         self.assertEqual(t['errorCode'],0)
     def test_login_pwd(self):
         '''【LanaDigital】/api/cust/pwd/login使用密码登录接口-正案例'''
-        phoneNo=cx_old_phoneNo()
-        s=huoqu_user_state(phoneNo)
+        phoneNo = cx_old_phoneNo()
+        s = huoqu_user_state(phoneNo)
         #print('s--',s)
-        data={"phoneNo":phoneNo,"password":"123456","hasPwd":s['data']['hasPwd'],"gaid":"Exception:null"}
-        r=requests.post(host_api+"/api/cust/pwd/login",data=json.dumps(data),headers=head_api,verify=False)
-        t=r.json()
+        data = {"phoneNo":phoneNo,"password":"123456","hasPwd":s['data']['hasPwd'],"gaid":"Exception:null"}
+        r = requests.post(host_api+"/api/cust/pwd/login",data=json.dumps(data),headers=head_api,verify=False)
+        t = r.json()
         #print('t--',t)
         self.assertEqual(t['errorCode'],0)
-        token=t['data']['token']
+        token = t['data']['token']
         self.assertIsNotNone(token)
     def test_update_pwd(self):
         '''【LanaDigital】/api/cust/pwd/update更新用户密码接口-正案例'''
-        registNo=str(random.randint(8000000000,9999999999)) #10位随机数作为手机号
-        head=login_code(registNo)
-        data={"phoneNo":registNo,"newPwd":"123456"}
-        r=requests.post(host_api+"/api/cust/pwd/update",data=json.dumps(data),headers=head,verify=False)
-        s=r.json()
-        self.assertEqual(s['errorCode'],0)
+        registNo = str(random.randint(8000000000,9999999999)) #10位随机数作为手机号
+        head = login_code(registNo)
+        data = {"phoneNo":registNo,"newPwd":"123456"}
+        r = requests.post(host_api+"/api/cust/pwd/update",data=json.dumps(data),headers=head,verify=False)
+        t = r.json()
+        self.assertEqual(t['errorCode'],0)
     def test_auth_cert(self):
         '''【LanaDigital】/api/cust/auth/cert身份认证接口-正案例'''
-        st=random_four_zm()
+        st = random_four_zm()
         registNo = str(random.randint(8000000000, 9999999999))  # 10位随机数作为手机号
         head = login_code(registNo)
-        data={"birthdate":"1998-11-18","civilStatus":"10050002","civilStatusName":"Soltero","curp":st+"981118MM"+st+"V8","delegationOrMunicipality":"zxcvbbbccxxx","education":"10190002","educationName":"Primaria","fatherLastName":"WANG","gender":"10030000",
+        data = {"birthdate":"1998-11-18","civilStatus":"10050002","civilStatusName":"Soltero","curp":st+"981118MM"+st+"V8","delegationOrMunicipality":"zxcvbbbccxxx","education":"10190002","educationName":"Primaria","fatherLastName":"WANG","gender":"10030000",
               "genderName":"Mujer","motherLastName":"LIU","name":"SHUANG","outdoorNumber":"qweetyyu","phoneNo":registNo,"postalCode":"55555","state":"11130001","street":"444444","suburb":"asdfhhj"}
-        r=requests.post(host_api+'/api/cust/auth/cert',data=json.dumps(data),headers=head,verify=False)
-        s=r.json()
-        custNo=s['data']['custNo']
-        self.assertEqual(s['errorCode'],0)
+        r = requests.post(host_api+'/api/cust/auth/cert',data=json.dumps(data),headers=head,verify=False)
+        t = r.json()
+        custNo = t['data']['custNo']
+        self.assertEqual(t['errorCode'],0)
         self.assertIsNotNone(custNo)
-        sql="select CERT_AUTH from cu_cust_auth_dtl  where CUST_NO='"+custNo+"';"  #cu_客户认证信息明细表
-        cert_auth=DataBase(which_db).get_one(sql)
+        sql = "select CERT_AUTH from cu_cust_auth_dtl  where CUST_NO='"+custNo+"';"  #cu_客户认证信息明细表
+        cert_auth = DataBase(which_db).get_one(sql)
         self.assertEqual(cert_auth[0],1)
     def test_auth_review(self):
         '''【LanaDigital】/api/cust/auth/review接口-正案例'''
-        test_data=for_test_auth_other()
-        custNo=test_data[1]
-        head=test_data[2]
-        data={"certType":"WORK","custNo":custNo}
-        r1=requests.post(host_api+'/api/cust/auth/review',data=json.dumps(data),headers=head,verify=False)
-        s1=r1.json()
-        self.assertEqual(s1['errorCode'],0)
+        test_data = for_test_auth_other()
+        custNo = test_data[1]
+        head = test_data[2]
+        data = {"certType":"WORK","custNo":custNo}
+        r = requests.post(host_api+'/api/cust/auth/review',data=json.dumps(data),headers=head,verify=False)
+        t = r.json()
+        self.assertEqual(t['errorCode'],0)
     def test_auth_kycStat(self):
         '''【LanaDigital】/api/cust/auth/kyc/stat KYC认证信息查询，判断是否kyc认证项都完成-正案例'''
-        test_data=for_test_auth_other()
-        phone=test_data[0]
-        custNo=test_data[1]
-        head=test_data[2]
+        test_data = for_test_auth_other()
+        phone = test_data[0]
+        custNo = test_data[1]
+        head = test_data[2]
         update_kyc_auth(phone,custNo)
-        data={"custNo":custNo}
-        r=requests.post(host_api+'/api/cust/auth/kyc/stat',data=json.dumps(data),headers=head,verify=False)
-        s=r.json()
-        self.assertEqual(s['errorCode'],0)
+        data = {"custNo":custNo}
+        r = requests.post(host_api+'/api/cust/auth/kyc/stat',data=json.dumps(data),headers=head,verify=False)
+        t = r.json()
+        self.assertEqual(t['errorCode'],0)
     def test_auth_work(self):
         '''【LanaDigital】/api/cust/auth/work接口（客户工作情况）-正案例'''
-        test_data=for_test_auth_other()
-        custNo=test_data[1]
-        head=test_data[2]
-        data={"companyAddress":"","companyName":"","companyPhone":"","custNo":custNo,"income":"10870004","industry":"","jobType":"10130006"}#工作收入来源
-        r=requests.post(host_api+'/api/cust/auth/work',data=json.dumps(data),headers=head,verify=False)
-        s=r.json()
-        self.assertEqual(s['errorCode'],0)
-        self.assertEqual(s['data']['authSuccess'],True)
+        test_data = for_test_auth_other()
+        custNo = test_data[1]
+        head = test_data[2]
+        data = {"companyAddress":"","companyName":"","companyPhone":"","custNo":custNo,"income":"10870004","industry":"","jobType":"10130006"}#工作收入来源
+        r = requests.post(host_api+'/api/cust/auth/work',data=json.dumps(data),headers=head,verify=False)
+        t = r.json()
+        self.assertEqual(t['errorCode'],0)
+        self.assertEqual(t['data']['authSuccess'],True)
         sql = "select WORK_AUTH from cu_cust_auth_dtl  where CUST_NO='" + custNo + "';"  # cu_客户认证信息明细表
         work_auth = DataBase(which_db).get_one(sql)
         self.assertEqual(work_auth[0], 1)
     def test_app_grab_data(self):
         '''【LanaDigital】/api/common/grab/app_grab_data接口-正案例-app第三个页面接口（抓取用户手机短信，通讯录，设备信息，已安装app等信息）'''
-        test_data=for_test_auth_other()
-        custNo=test_data[1]
-        phoneNo=test_data[0]
-        head=test_data[2]
+        test_data = for_test_auth_other()
+        custNo = test_data[1]
+        phoneNo = test_data[0]
+        head = test_data[2]
         #设备信息
-        data1={"custNo":custNo,"dataType":"11090003","grabData":{"deviceId":"28884415e8dc4bc3please open wifiSM-A5160","imei":"28884415e8dc4bc3",
+        data1 = {"custNo":custNo,"dataType":"11090003","grabData":{"deviceId":"28884415e8dc4bc3please open wifiSM-A5160","imei":"28884415e8dc4bc3",
         "ipAddress":"192.168.20.100","ipResolveCit":"","ipResolveCom":"","mac":"please open wifi","mobileBrand":"samsung","mobileModel":"SM-A5160",
         "otherInfo":"API:,30,deviceId:28884415e8dc4bc3,dield:unknown","phoneNo":phoneNo,"systemVersion":"11","userId":""},"loanNo":"",
            "pageGet":"Contact","phoneNo":phoneNo,"recordTime":"1634898295311"}
         #联系人
-        data2={"custNo":custNo,"dataType":"11090002","grabData":{"data":[{"contactName":"5qV0PQ","contactNo":"8293338387","deviceId":"28884415e8dc4bc3please open wifiSM-A5160",
+        data2 = {"custNo":custNo,"dataType":"11090002","grabData":{"data":[{"contactName":"5qV0PQ","contactNo":"8293338387","deviceId":"28884415e8dc4bc3please open wifiSM-A5160",
         "imei":"28884415e8dc4bc3","mac":"A2:B4:74:63:FB:40","phoneNo":phoneNo,"recordBehavior":"联系人列表抓取","recordTime":1634898331133,"userId":""},
         {"contactName":"KlMwSp","contactNo":"8451760297","deviceId":"28884415e8dc4bc3please open wifiSM-A5160","imei":"28884415e8dc4bc3",
         "mac":"A2:B4:74:63:FB:40","phoneNo":phoneNo,"recordBehavior":"联系人列表抓取","recordTime":1634898331283,"userId":""}]},"loanNo":"",
         "pageGet":"Contact","phoneNo":phoneNo,"recordTime":"1634898388674"}
         #短信内容
-        data3={"custNo":custNo,"dataType":"11090005","grabData":{"data":[{"address":"+525590632527","body":"[AprestamoPlus] Felicitaciones https://bit.ly/3xBJoCT",
+        data3 = {"custNo":custNo,"dataType":"11090005","grabData":{"data":[{"address":"+525590632527","body":"[AprestamoPlus] Felicitaciones https://bit.ly/3xBJoCT",
         "date":1634890751559,"kind":"11140002","receiver":"-1491790776","sender":"+525590632527"}]},"loanNo":"","pageGet":"Contact","phoneNo":phoneNo,
         "recordTime":"1634898295245"}
         #位置信息
-        data4={"custNo":custNo,"dataType":"11090004","grabData":{"deviceId":"66af3c496c59bc733a:1e:f6:81:46:daV2031A","imei":"66af3c496c59bc73",
+        data4 = {"custNo":custNo,"dataType":"11090004","grabData":{"deviceId":"66af3c496c59bc733a:1e:f6:81:46:daV2031A","imei":"66af3c496c59bc73",
         "latitude":"104.062505","longitude":"30.550497","mac":"3a:1e:f6:81:46:da","phoneNo":phoneNo,"userId":""},"loanNo":"",
         "pageGet":"Contact","phoneNo":phoneNo,"recordTime":"1635147615526"}
         #已安装应用
-        data5={"custNo":custNo,"dataType":"11090001","grabData":{"data":[{"appName":"GBA Service","appPackage":"com.mediatek.gba","appVersionNo":"29",
+        data5 = {"custNo":custNo,"dataType":"11090001","grabData":{"data":[{"appName":"GBA Service","appPackage":"com.mediatek.gba","appVersionNo":"29",
         "deviceId":"66af3c496c59bc733a:1e:f6:81:46:daV2031A","imei":"66af3c496c59bc73","installTime":"1230768000000","lastUpdateTime":"1230768000000",
         "mac":"3a:1e:f6:81:46:da","phoneNo":phoneNo,"recordBehavior":"Contact","recordTime":1635147615405,"userId":""}]},"loanNo":"",
         "pageGet":"Contact","phoneNo":phoneNo,"recordTime":"1635147616281"}
-        data0=[data1,data2,data3,data4,data5]
+        data0 = [data1,data2,data3,data4,data5]
         for data0 in data0:
-            r0=requests.post(host_api+'/api/common/grab/app_grab_data',data=json.dumps(data0),headers=head,verify=False)  #抓取用户手机短信，通讯录，已安装app等信息
-            t0=r0.json()
-            self.assertEqual(t0['errorCode'],0)
+            r = requests.post(host_api+'/api/common/grab/app_grab_data',data=json.dumps(data0),headers=head,verify=False)  #抓取用户手机短信，通讯录，已安装app等信息
+            t = r.json()
+            self.assertEqual(t['errorCode'],0)
             time.sleep(1)
     def test_auth_contact(self):
         '''【LanaDigital】/api/cust/auth/other/contact接口(填写联系人联系方式)app第四个页面-正案例'''
-        test_data=for_test_for_contact_other()
-        custNo=test_data[0]
-        head=test_data[1]
+        test_data = for_test_for_contact_other()
+        custNo = test_data[0]
+        head = test_data[1]
         # print('custNo---',custNo)
         # sql = "UPDATE cu_cust_auth_dtl set cert_auth='1', kyc_auth = '1', work_auth = '1' WHERE CUST_NO='"+custNo+"';"
         # DataBase(which_db).executeUpdateSql(sql)
-        data={"custNo":custNo,"contacts":[{"custNo":custNo,"name":"Advance Talktime","phone":"52141","relationship":"10110004","relationshipName":"Hermanos"},{"custNo":custNo,"name":"Cricket","phone":"543212601","relationship":"10110001","relationshipName":"Padres"}]}
-        r=requests.post(host_api+'/api/cust/auth/other/contact',data=json.dumps(data),headers=head,verify=False)#最后一步，填写2个联系人的联系方式
-        t=r.json()
+        data = {"custNo":custNo,"contacts":[{"custNo":custNo,"name":"Advance Talktime","phone":"52141","relationship":"10110004","relationshipName":"Hermanos"},{"custNo":custNo,"name":"Cricket","phone":"543212601","relationship":"10110001","relationshipName":"Padres"}]}
+        r = requests.post(host_api+'/api/cust/auth/other/contact',data=json.dumps(data),headers=head,verify=False)#最后一步，填写2个联系人的联系方式
+        t = r.json()
         # print(t)
         self.assertEqual(t['errorCode'],0)
         # sql = "select OTHER_CONTACT_AUTH from cu_cust_auth_dtl  where CUST_NO='" + custNo + "';"  # cu_客户认证信息明细表
@@ -162,16 +162,16 @@ class DaiQian_Api_Test(unittest.TestCase):
         # self.assertEqual(other_contact_auth[0], 1)
     def test_bank_auth_01(self):
         '''【LanaDigital】/api/cust/auth/bank绑定银行卡接口-正案例'''
-        bank_acct_no=str(random.randint(1000,9999))
+        bank_acct_no = str(random.randint(1000,9999))
         test_data = for_apply_loan()
         custNo = test_data[0]
         head = test_data[1]
-        data={"bankCode":"10020008","bankCodeName":"BBVA BANCOMER","clabe":"012121212121212128","custNo":custNo}
-        r=requests.post(host_api+'/api/cust/auth/bank',data=json.dumps(data),headers=head,verify=False)
+        data = {"bankCode":"10020008","bankCodeName":"BBVA BANCOMER","clabe":"012121212121212128","custNo":custNo}
+        r = requests.post(host_api+'/api/cust/auth/bank',data=json.dumps(data),headers=head,verify=False)
         self.assertEqual(r.status_code,200)
-        t=r.json()
+        t = r.json()
         self.assertEqual(t['errorCode'],0)                                    #改为4位随机数
-        sql="update cu_cust_bank_card_dtl set BANK_ACCT_NO='"+bank_acct_no+"' where CUST_NO='"+custNo+"';"
+        sql = "update cu_cust_bank_card_dtl set BANK_ACCT_NO='"+bank_acct_no+"' where CUST_NO='"+custNo+"';"
         DataBase(which_db).executeUpdateSql(sql)  #防止被真实放款给该银行卡
     def test_bank_auth_02(self):
         '''【LanaDigital】/api/cust/auth/bank绑定银行卡接口(有在贷不能更换银行卡)-正案例'''
@@ -197,27 +197,27 @@ class DaiQian_Api_Test(unittest.TestCase):
         self.assertEqual(t['message'], 'custNoParámetro anormal ')
     def test_feedback_record(self):
         '''【LanaDigital】/api/hook/feedback提交feedback记录接口-正案例'''
-        registNo='1166777777'
-        headt_api_f=login_code_f(registNo)
-        custNo='C2082111048144516475940700160'
-        files={'custNo':(None,custNo),'phoneNo':(None,registNo),'feedbackDesc':(None,'test-test'),'feedbackType':(None,'11110003'),'feedbackPage':(None,'CLABE'),
+        registNo = '1166777777'
+        headt_api_f = login_code_f(registNo)
+        custNo = 'C2082111048144516475940700160'
+        files = {'custNo':(None,custNo),'phoneNo':(None,registNo),'feedbackDesc':(None,'test-test'),'feedbackType':(None,'11110003'),'feedbackPage':(None,'CLABE'),
                'feedbackOption':(None,'No sé cuál es mi cuenta CLABE'),'imgs':('key.png',open(r'D:\pic\app.jpg', 'rb'),'text/plain')}
-        r=requests.post(host_api+"/api/hook/feedback",files=files,headers=headt_api_f,verify=False)
-        t=r.json()
+        r = requests.post(host_api+"/api/hook/feedback",files=files,headers=headt_api_f,verify=False)
+        t = r.json()
         #print(t)
         self.assertEqual(t['errorCode'],0)
     def test_risk_credit(self):
         '''【LanaDigital】/api/task/risk/credit风控授信接口-正案例'''
-        test_data=for_test_auth_other()
-        head=test_data[2]
-        r=requests.post(host_api+'/api/task/risk/credit', headers=head,verify=False)
+        test_data = for_test_auth_other()
+        head = test_data[2]
+        r = requests.post(host_api+'/api/task/risk/credit', headers=head,verify=False)
         self.assertEqual(r.status_code,200)
     def test_bank_codes(self):
         '''【LanaDigital】/api/common/bank/codes获取银行卡码值及前缀接口-正案例'''
-        registNo=cx_registNo_10()
-        headt_api=login_code(registNo)
-        r=requests.get(host_api+"/api/common/bank/codes",headers=headt_api,verify=False)
-        t=r.json()
+        registNo = cx_registNo_10()
+        headt_api = login_code(registNo)
+        r = requests.get(host_api+"/api/common/bank/codes",headers=headt_api,verify=False)
+        t = r.json()
         # print(t)
         self.assertEqual(t['errorCode'],0)
         self.assertEqual(t,{"data":{"bankList":[{"bankCode":"10020037","bankName":"ABC CAPITAL","preNums":"138"},{"bankCode":"10020020","bankName":"ACCENDO BANCO","preNums":"102"},{"bankCode":"10020034","bankName":"ACTINVER","preNums":"133"},{"bankCode":"10020018","bankName":"AFIRME","preNums":"062"},{"bankCode":"10020067","bankName":"AKALA","preNums":"638"},{"bankCode":"10020021","bankName":"AMERICAN EXPRES","preNums":"103"},{"bankCode":"10020030","bankName":"AUTOFIN","preNums":"128"},{"bankCode":"10020029","bankName":"AZTECA","preNums":"127"},{"bankCode":"10020011","bankName":"BAJIO","preNums":"030"},{"bankCode":"10020007","bankName":"BANAMEX","preNums":"002"},{"bankCode":"10020047","bankName":"BANCO FINTERRA","preNums":"154"},{"bankCode":"10020052","bankName":"BANCO S3","preNums":"160"},{"bankCode":"10020001","bankName":"BANCOMEXT","preNums":"006"},{"bankCode":"10020036","bankName":"BANCOPPEL","preNums":"137"},{"bankCode":"10020046","bankName":"BANCREA","preNums":"152"},{"bankCode":"10020003","bankName":"BANJERCITO","preNums":"019"},{"bankCode":"10020022","bankName":"BANK OF AMERICA","preNums":"106"},{"bankCode":"10020042","bankName":"BANKAOOL","preNums":"147"},{"bankCode":"10020002","bankName":"BANOBRAS","preNums":"009"},{"bankCode":"10020019","bankName":"BANORTE","preNums":"072"},{"bankCode":"10020015","bankName":"BANREGIO","preNums":"058"},{"bankCode":"10020005","bankName":"BANSEFI","preNums":"166"},{"bankCode":"10020017","bankName":"BANSI","preNums":"060"},{"bankCode":"10020031","bankName":"BARCLAYS","preNums":"129"},{"bankCode":"10020041","bankName":"BBASE","preNums":"145"},{"bankCode":"10020008","bankName":"BBVA BANCOMER","preNums":"012"},{"bankCode":"10020025","bankName":"BMONEX","preNums":"112"},{"bankCode":"10020075","bankName":"CAJA POP MEXICA","preNums":"677"},{"bankCode":"10020077","bankName":"CAJA TELEFONIST","preNums":"683"},{"bankCode":"10020063","bankName":"CB INTERCAM","preNums":"630"},{"bankCode":"10020064","bankName":"CI BOLSA","preNums":"631"},{"bankCode":"10020040","bankName":"CIBANCO","preNums":"143"},{"bankCode":"10020032","bankName":"COMPARTAMOS","preNums":"130"},{"bankCode":"10020038","bankName":"CONSUBANCO","preNums":"140"},{"bankCode":"10020071","bankName":"CREDICAPITAL","preNums":"652"},{"bankCode":"10020028","bankName":"CREDIT SUISSE","preNums":"126"},{"bankCode":"10020076","bankName":"CRISTOBAL COLON","preNums":"680"},{"bankCode":"10020083","bankName":"CoDi Valida","preNums":"903"},{"bankCode":"10020027","bankName":"DEUTSCHE","preNums":"124"},{"bankCode":"10020045","bankName":"DONDE","preNums":"151"},{"bankCode":"10020057","bankName":"ESTRUCTURADORES","preNums":"606"},{"bankCode":"10020070","bankName":"EVERCORE","preNums":"648"},{"bankCode":"10020060","bankName":"FINAMEX","preNums":"616"},{"bankCode":"10020065","bankName":"FINCOMUN","preNums":"634"},{"bankCode":"10020081","bankName":"FOMPED","preNums":"689"},{"bankCode":"10020079","bankName":"FONDO (FIRA)","preNums":"685"},{"bankCode":"10020054","bankName":"GBM","preNums":"601"},{"bankCode":"10020066","bankName":"HDI SEGUROS","preNums":"636"},{"bankCode":"10020006","bankName":"HIPOTECARIA FED","preNums":"168"},{"bankCode":"10020010","bankName":"HSBC","preNums":"021"},{"bankCode":"10020048","bankName":"ICBC","preNums":"155"},{"bankCode":"10020012","bankName":"INBURSA","preNums":"036"},{"bankCode":"10020082","bankName":"INDEVAL","preNums":"902"},{"bankCode":"10020044","bankName":"INMOBILIARIO","preNums":"150"},{"bankCode":"10020035","bankName":"INTERCAM BANCO","preNums":"136"},{"bankCode":"10020080","bankName":"INVERCAP","preNums":"686"},{"bankCode":"10020016","bankName":"INVEX","preNums":"059"},{"bankCode":"10020024","bankName":"JP MORGAN","preNums":"110"},{"bankCode":"10020074","bankName":"LIBERTAD","preNums":"670"},{"bankCode":"10020055","bankName":"MASARI","preNums":"602"},{"bankCode":"10020013","bankName":"MIFEL","preNums":"042"},{"bankCode":"10020051","bankName":"MIZUHO BANK","preNums":"158"},{"bankCode":"10020053","bankName":"MONEXCB","preNums":"600"},{"bankCode":"10020023","bankName":"MUFG","preNums":"108"},{"bankCode":"10020033","bankName":"MULTIVA BANCO","preNums":"132"},{"bankCode":"10020059","bankName":"MULTIVA CBOLSA","preNums":"613"},{"bankCode":"10020004","bankName":"NAFIN","preNums":"135"},{"bankCode":"10020043","bankName":"PAGATODO","preNums":"148"},{"bankCode":"10020062","bankName":"PROFUTURO","preNums":"620"},{"bankCode":"10020049","bankName":"SABADELL","preNums":"156"},{"bankCode":"10020009","bankName":"SANTANDER","preNums":"014"},{"bankCode":"10020084","bankName":"SANTANDER2","preNums":"814"},{"bankCode":"10020014","bankName":"SCOTIABANK","preNums":"044"},{"bankCode":"10020050","bankName":"SHINHAN","preNums":"157"},{"bankCode":"10020069","bankName":"STP","preNums":"646"},{"bankCode":"10020078","bankName":"TRANSFER","preNums":"684"},{"bankCode":"10020072","bankName":"UNAGRA","preNums":"656"},{"bankCode":"10020061","bankName":"VALMEX","preNums":"617"},{"bankCode":"10020056","bankName":"VALUE","preNums":"605"},{"bankCode":"10020026","bankName":"VE POR MAS","preNums":"113"},{"bankCode":"10020058","bankName":"VECTOR","preNums":"608"},{"bankCode":"10020039","bankName":"VOLKSWAGEN","preNums":"141"}],"hotBankList":[{"bankCode":"10020008","bankName":"BBVA BANCOMER","preNums":"012"},{"bankCode":"10020029","bankName":"AZTECA","preNums":"127"},{"bankCode":"10020007","bankName":"BANAMEX","preNums":"002"},{"bankCode":"10020009","bankName":"SANTANDER","preNums":"014"},{"bankCode":"10020019","bankName":"BANORTE","preNums":"072"},{"bankCode":"10020010","bankName":"HSBC","preNums":"021"},{"bankCode":"10020014","bankName":"SCOTIABANK","preNums":"044"},{"bankCode":"10020069","bankName":"STP","preNums":"646"}]},"errorCode":0,"message":"ok"})
