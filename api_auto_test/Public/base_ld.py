@@ -75,18 +75,58 @@ def payout_stp_data():
     list.append(phone)
     # print(list)
     return list
+def payout_stp_data_1():
+    sql = '''#查询能够放款的用户(包含额外费用)
+        select c.PHONE_NO from cu_cust_reg_dtl c left join cu_cust_status_info s on c.CUST_NO=s.CUST_NO
+        left join cu_cust_account_dtl a on a.CUST_NO=s.CUST_NO
+        where s.`STATUS`='20040003'and a.REMAINING_AMT>'600' ORDER BY s.INST_TIME desc limit 1;'''
+    data = DataBase(which_db).get_one(sql)
+    phone = str(data[0])
+    return phone
+def payout_stp_data_2():
+    sql = '''#查询能够放款的用户(不包含额外费用)
+        select c.PHONE_NO,a.REMAINING_AMT from cu_cust_reg_dtl c left join cu_cust_status_info s on c.CUST_NO=s.CUST_NO
+        left join cu_cust_account_dtl a on a.CUST_NO=s.CUST_NO
+        where s.`STATUS`='20040004'and a.REMAINING_AMT>'600' ORDER BY s.INST_TIME desc limit 1;'''
+    data = DataBase(which_db).get_one(sql)
+    #print(data)
+    phone = str(data[0])
+    amt = str(data[1])
+    list = []
+    list.append(phone)
+    list.append(amt)
+    return list
 def repay_data():
-    sql = '''#查询能够还款的用户
-        select a.CUST_NO,c.PHONE_NO from cu_cust_reg_dtl c left join cu_cust_account_dtl a on c.CUST_NO=a.CUST_NO 
+    sql1 = '''#查询能够还款的用户
+        select a.CUST_NO,c.PHONE_NO,l.LOAN_NO,p.ORDER_NO,a.ACCOUNT_NO from cu_cust_reg_dtl c left join cu_cust_account_dtl a on c.CUST_NO=a.CUST_NO 
         left join fin_ad_dtl f on f.ACCOUNT_NO = a.ACCOUNT_NO
+        left join lo_loan_dtl l on l.CUST_NO=a.CUST_NO
+        left join lo_loan_payout_dtl p on l.LOAN_NO=p.LOAN_NO
         GROUP BY f.RECEIVE_AMT HAVING sum(f.RECEIVE_AMT>0) 
         ORDER BY a.INST_TIME desc limit 1;'''
-    data = DataBase(which_db).get_one(sql)
-    cust_no= str(data[0])
+    data = DataBase(which_db).get_one(sql1)
+    #print(data)
+    cust_no = str(data[0])
     phone = str(data[1])
+    loan_no = str(data[2])
+    order_no = str(data[3])
+    account_no = str(data[4])
+    # 查询还款用户的应还金额
+    sql2 = "select sum(RECEIVE_AMT) from fin_ad_dtl where ORDER_NO='"+order_no+"';"
+    data1=DataBase(which_db).get_one(sql2)
+    #print(data1)
+    amt=str(data1[0])
+    # 查询还款用户的CLABE_NO
+    sql3 = "select CLABE_NO from fin_clabe_usable_dtl where ACCOUNT_NO='" + account_no + "';"
+    data2 = DataBase(which_db).get_one(sql3)
+    # print(data1)
+    clabe_no = str(data2[0])
     list = []
     list.append(cust_no)
     list.append(phone)
+    list.append(loan_no)
+    list.append(amt)
+    list.append(clabe_no)
     # print(list)
     return list
 #更新密码，包含了用验证码方式注册登录的步骤
@@ -303,4 +343,4 @@ def update_batch_log():
 
 if __name__ == '__main__':
     #cx_registNo_04()
-    compute_code("8294644162")
+    repay_data()

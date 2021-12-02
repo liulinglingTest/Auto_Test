@@ -204,7 +204,7 @@ class DaiQian_Api_Test(unittest.TestCase):
                'feedbackOption':(None,'No sé cuál es mi cuenta CLABE'),'imgs':('key.png',open(r'D:\pic\app.jpg', 'rb'),'text/plain')}
         r=requests.post(host_api+"/api/hook/feedback",files=files,headers=headt_api_f,verify=False)
         t=r.json()
-        print(t)
+        #print(t)
         self.assertEqual(t['errorCode'],0)
     def test_risk_credit(self):
         '''【LanaDigital】/api/task/risk/credit风控授信接口-正案例'''
