@@ -58,9 +58,15 @@ def lay_registNo():
     return phone
 def payout_stp_data():
     sql = '''#查询能够放款成功的用户
-        select p.TRAN_NO,p.TRAN_ORDER_NO,c.PHONE_NO,c.CUST_NO from cu_cust_reg_dtl c left join cu_cust_bank_card_dtl b on c.CUST_NO=b.CUST_NO
-        left join pay_tran_dtl p on p.IN_ACCT_NO=b.BANK_ACCT_NO
-        where p.TRAN_STAT='10220002' ORDER BY p.INST_TIME desc limit 1;'''
+        select p.TRAN_NO,p.TRAN_ORDER_NO,c.PHONE_NO,c.CUST_NO from lo_loan_dtl l 
+        left join cu_cust_reg_dtl c on c.cust_no=l.cust_no
+		left join cu_cust_bank_card_dtl b on c.CUST_NO=b.CUST_NO
+		left join pay_tran_dtl p on p.IN_ACCT_NO=b.BANK_ACCT_NO
+        left join cu_cust_status_info s on c.cust_no=s.cust_no
+        left join cu_cust_account_dtl a on c.cust_no= a.cust_no
+        where s.STATUS='20040004' and a.REMAINING_AMT>'600' and l.CUST_NO not in (
+        select CUST_NO from lo_loan_dtl where BEFORE_STAT='10260008')
+        order by l.INST_TIME desc limit 1;'''
     data = DataBase(which_db).get_one(sql)
     lists = list(data)
     return lists
