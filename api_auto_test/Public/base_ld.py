@@ -4,7 +4,7 @@ from Public.dataBase_ld import *
 from Public.heads_ld import *
 from Public.check_api import *
 import random,string,datetime
-#短信验证码，默认手机号后4位单个+5后取个位数，在逆序排列。
+# 短信验证码，默认手机号后4位单个+5后取个位数，在逆序排列。
 def compute_code(m):
     m = m[-4:]
     x1 = str(int(m[0])+5)
@@ -13,6 +13,11 @@ def compute_code(m):
     x4 = str(int(m[3])+5)
     x = x4[-1:]+x3[-1:]+x2[-1:]+x1[-1:]
     return x
+def zhuan_huan(result):
+    m = []
+    m.append(result)
+    t = [tuple(str(n) for n in m) for m in m]  #python列表数字里混入一个Decimal，转换方式
+    return t
 def huoqu_user_state(registNo):
     '''/api/cust/check/user/state获取用户状态'''
     data1 = {"registNo": registNo}
@@ -56,7 +61,7 @@ def lay_registNo():
     phone = str(phone[0])
     #print(phone)
     return phone
-def payout_stp_data():
+def payout_stp_data_success():
     sql = '''#查询能够放款成功的用户
         select p.TRAN_NO,p.TRAN_ORDER_NO,c.PHONE_NO,c.CUST_NO from lo_loan_dtl l 
         left join cu_cust_reg_dtl c on c.cust_no=l.cust_no
@@ -69,6 +74,22 @@ def payout_stp_data():
         order by l.INST_TIME desc limit 1;'''
     data = DataBase(which_db).get_one(sql)
     lists = list(data)
+    print(lists)
+    return lists
+def payout_stp_data_failure():
+    sql = '''#查询能够放款失败，进行回滚操作的用户
+        select p.TRAN_NO,p.TRAN_ORDER_NO,c.PHONE_NO,c.CUST_NO,l.LOAN_NO from lo_loan_dtl l 
+        left join cu_cust_reg_dtl c on c.cust_no=l.cust_no
+		left join cu_cust_bank_card_dtl b on c.CUST_NO=b.CUST_NO
+		left join pay_tran_dtl p on p.IN_ACCT_NO=b.BANK_ACCT_NO
+        left join cu_cust_status_info s on c.cust_no=s.cust_no
+        left join cu_cust_account_dtl a on c.cust_no= a.cust_no
+        where s.STATUS='20040004' and a.REMAINING_AMT>'600' and l.before_stat='10260005'
+		and l.CUST_NO not in ( select CUST_NO from lo_loan_dtl where BEFORE_STAT='10260008')
+        order by l.INST_TIME desc limit 1;'''
+    data = DataBase(which_db).get_one(sql)
+    lists = list(data)
+    print(lists)
     return lists
 def payout_stp_data_1():
     sql = '''#查询能够放款的用户(包含额外费用)
@@ -117,29 +138,22 @@ def payout_stp_data_4():
     return lists
 def repay_data():
     sql1 = '''#查询能够还款的用户
-        select a.CUST_NO,c.PHONE_NO,l.LOAN_NO,p.ORDER_NO,a.ACCOUNT_NO from cu_cust_reg_dtl c left join cu_cust_account_dtl a on c.CUST_NO=a.CUST_NO 
+        select a.CUST_NO,c.PHONE_NO,l.LOAN_NO,SUM(f.RECEIVE_AMT),u.CLABE_NO from cu_cust_reg_dtl c 
+        left join cu_cust_account_dtl a on c.CUST_NO=a.CUST_NO 
         left join fin_ad_dtl f on f.ACCOUNT_NO = a.ACCOUNT_NO
         left join lo_loan_dtl l on l.CUST_NO=a.CUST_NO
         left join lo_loan_payout_dtl p on l.LOAN_NO=p.LOAN_NO
+		left join fin_clabe_usable_dtl u on u.ACCOUNT_NO = a.ACCOUNT_NO
         GROUP BY f.RECEIVE_AMT HAVING sum(f.RECEIVE_AMT>0) 
         ORDER BY a.INST_TIME desc limit 1;'''
     data = DataBase(which_db).get_one(sql1)
-    #print(data)
-    lists = list(data)
-    # 查询还款用户的应还金额
-    sql2 = "select sum(RECEIVE_AMT) from fin_ad_dtl where ORDER_NO='" + lists[3] + "';"
-    data1 = DataBase(which_db).get_one(sql2)
-    #print(data1)
-    amt = str(data1[0])
-    # 查询还款用户的CLABE_NO
-    sql3 = "select CLABE_NO from fin_clabe_usable_dtl where ACCOUNT_NO='" + lists[4] + "';"
-    data2 = DataBase(which_db).get_one(sql3)
-    # print(data1)
-    clabe_no = str(data2[0])
-    lists.append(amt)
-    lists.append(clabe_no)
-    return lists
-#更新密码，包含了用验证码方式注册登录的步骤
+    # print(data)
+    lists = zhuan_huan(data)
+    # print(lists)
+    listd = list(lists)
+    # print(listd)
+    return listd
+# 更新密码，包含了用验证码方式注册登录的步骤
 def update_pwd(phoneNo):
     token = login_code(phoneNo)
     headt = head_token(token)
@@ -148,10 +162,10 @@ def update_pwd(phoneNo):
     check_api(r)
 def random_four_zm():
     st = ''
-    for j in range(4):  #生成4个随机英文大写字母
+    for j in range(4):  # 生成4个随机英文大写字母
         st += random.choice(string.ascii_uppercase)
     return st
-#通过密码登录，返回token
+# 通过密码登录，返回token
 def login_pwd(phoneNo):
     s = huoqu_user_state(phoneNo)
     data = {"phoneNo": phoneNo, "password": "123456", "hasPwd": s['data']['hasPwd'], "gaid": "Exception:null"}
@@ -165,7 +179,7 @@ def headtt(registNo):
     return headt
 def for_test_auth_other():
     st = random_four_zm()
-    registNo = str(random.randint(8000000000,9999999999)) #10位随机数作为手机号
+    registNo = str(random.randint(8000000000,9999999999)) # 10位随机数作为手机号
     code = compute_code(registNo)
     s = huoqu_user_state(registNo)
     data = {"code": code, "hasPwd": s['data']['hasPwd'], "phoneNo": registNo}
@@ -249,52 +263,52 @@ def for_apply_loan():
     return list
 
 def for_test_payment():
-    #到待提现，检查账单详情
-    #cust,registNo,head,headp
+    # 到待提现，检查账单详情
+    # cust,registNo,head,headp
     test_data = for_test_auth_other()
     registNo = test_data[0]
     custNo = test_data[1]
     head = test_data[2]
     headp = test_data[3]
-    #kyc
+    # kyc
     update_kyc_auth(registNo,custNo)
-    #work
+    # work
     auth_work(registNo,head)
-    #抓取数据
+    # 抓取数据
     auth_app_grab_data(registNo,custNo,head)
-    #联系人
+    # 联系人
     t4 = auth_contact(custNo,head)
-    #风控
+    # 风控
     risk_credit(head)
-    #查询用户的状态
+    # 查询用户的状态
     sql1 = "select status from cu_cust_status_info WHERE CUST_NO='"+custNo+"';"
     result1 = DataBase(which_db).get_one(sql1)
     if result1 is ('20040004'or "20040003"):
         print("数据正确，不用改数！")
     else:
         print("要改数！")
-#抓取数据
+# 抓取数据
 def auth_app_grab_data(phoneNo,custNo,headt):
-    #设备信息
+    # 设备信息
     data4 = {"custNo":custNo,"dataType":"11090003","grabData":{"deviceId":"28884415e8dc4bc3please open wifiSM-A5160","imei":"28884415e8dc4bc3",
     "ipAddress":"192.168.20.100","ipResolveCit":"","ipResolveCom":"","mac":"please open wifi","mobileBrand":"samsung","mobileModel":"SM-A5160",
     "otherInfo":"API:,30,deviceId:28884415e8dc4bc3,dield:unknown","phoneNo":phoneNo,"systemVersion":"11","userId":""},"loanNo":"",
            "pageGet":"Contact","phoneNo":phoneNo,"recordTime":"1634898295311"}
-    #联系人
+    # 联系人
     data5 = {"custNo":custNo,"dataType":"11090002","grabData":{"data":[{"contactName":"5qV0PQ","contactNo":"8293338387","deviceId":"28884415e8dc4bc3please open wifiSM-A5160",
     "imei":"28884415e8dc4bc3","mac":"A2:B4:74:63:FB:40","phoneNo":phoneNo,"recordBehavior":"联系人列表抓取","recordTime":1634898331133,"userId":""},
     {"contactName":"KlMwSp","contactNo":"8451760297","deviceId":"28884415e8dc4bc3please open wifiSM-A5160","imei":"28884415e8dc4bc3",
     "mac":"A2:B4:74:63:FB:40","phoneNo":phoneNo,"recordBehavior":"联系人列表抓取","recordTime":1634898331283,"userId":""}]},"loanNo":"",
     "pageGet":"Contact","phoneNo":phoneNo,"recordTime":"1634898388674"}
-    #短信内容
+    # 短信内容
     data6 = {"custNo":custNo,"dataType":"11090005","grabData":{"data":[{"address":"+525590632527","body":"[AprestamoPlus] Felicitaciones https://bit.ly/3xBJoCT",
     "date":1634890751559,"kind":"11140002","receiver":"-1491790776","sender":"+525590632527"}]},"loanNo":"","pageGet":"Contact","phoneNo":phoneNo,
     "recordTime":"1634898295245"}
-    #位置信息
+    # 位置信息
     data7 = {"custNo":custNo,"dataType":"11090004","grabData":{"deviceId":"66af3c496c59bc733a:1e:f6:81:46:daV2031A","imei":"66af3c496c59bc73",
     "latitude":"104.062505","longitude":"30.550497","mac":"3a:1e:f6:81:46:da","phoneNo":phoneNo,"userId":""},"loanNo":"",
     "pageGet":"Contact","phoneNo":phoneNo,"recordTime":"1635147615526"}
-    #已安装应用
+    # 已安装应用
     data8 = {"custNo":custNo,"dataType":"11090001","grabData":{"data":[{"appName":"GBA Service","appPackage":"com.mediatek.gba","appVersionNo":"29",
     "deviceId":"66af3c496c59bc733a:1e:f6:81:46:daV2031A","imei":"66af3c496c59bc73","installTime":"1230768000000","lastUpdateTime":"1230768000000",
     "mac":"3a:1e:f6:81:46:da","phoneNo":phoneNo,"recordBehavior":"Contact","recordTime":1635147615405,"userId":""}]},"loanNo":"",
@@ -309,7 +323,7 @@ def auth_work(custNo,headt):
     data2 = {"companyAddress":"","companyName":"","companyPhone":"","custNo":custNo,"income":"10870004","industry":"","jobType":"10130006"}#工作收入来源
     r2 = requests.post(host_api+'/api/cust/auth/work',data=json.dumps(data2),headers=headt)
 
-#更新kyc认证状态及其值
+# 更新kyc认证状态及其值
 def update_kyc_auth(registNo,custNo):
     t = str(time.time() * 1000000)[:15]
     tnum1 = str(random.randrange(10000, 99999))
@@ -331,11 +345,11 @@ def auth_contact(custNo,headt):
     data9 = {"custNo":custNo,"contacts":[{"custNo":custNo,"name":"test1","phone":"123333","relationship":"10110004","relationshipName":"Hermanos"},{"custNo":custNo,"name":"test2","phone":"543212601","relationship":"10110001","relationshipName":"Padres"}]}
     r9 = requests.post(host_api+'/api/cust/auth/other/contact',data=json.dumps(data9),headers=headt)#最后一步，填写2个联系人的联系方式
     return r9.json()
-#风控授信调度接口
+# 风控授信调度接口
 def risk_credit(headt):
     print("调用风控授信接口")
     r = requests.post(host_api+'/api/task/risk/credit',headers=headt)
-#当前时间的前一天=跑批业务日期，才能正常申请借款
+# 当前时间的前一天=跑批业务日期，才能正常申请借款
 def update_batch_log():
     sql = 'select now();'
     date_time = DataBase(which_db).get_one(sql)
@@ -353,4 +367,4 @@ def update_batch_log():
 
 if __name__ == '__main__':
     #cx_registNo_04()
-    repay_data()
+    payout_stp_data_success()

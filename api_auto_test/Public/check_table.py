@@ -10,26 +10,26 @@ def check_table_success(cust_no):
     data = DataBase(which_db).get_one(sql)
     account_no = str(data[0])
     # lo_loan_dtl贷款基本信息表,查询loan_no等【放款成功-贷前状态变更为10260005】
-    sql1 = "select loan_no,before_stat from lo_loan_dtl where CUST_NO = '" + cust_no + "' order by INST_TIME desc;"
+    sql1 = "select loan_no,before_stat from lo_loan_dtl where CUST_NO = '" + cust_no + "' order by INST_TIME desc limit 1;"
     data1 = DataBase(which_db).get_one(sql1)
     # print(data1)
     loan_no = str(data1[0])
     before_stat = str(data1[1])
     list_data.append(before_stat)
     # cu_账单信息表：账单日，状态正确【放款成功】
-    sql2 = "select BILL_DATE from cu_cust_bill_dtl  where cust_no = '" + cust_no + "';"
+    sql2 = "select BILL_DATE from cu_cust_bill_dtl  where cust_no = '" + cust_no + "' order by INST_TIME desc limit 1;"
     data2 = DataBase(which_db).get_one(sql2)
     # print(data2)
     bill_date = str(data2[0])
     list_data.append(bill_date)
     # cu_账单信息表,关联了放款本金和额外费用【放款成功】业务管
-    sql3 = "select BILL_DATE from cu_cust_fee_bill_dtl where cust_no = '" + cust_no + "';"
+    sql3 = "select BILL_DATE from cu_cust_fee_bill_dtl where cust_no = '" + cust_no + "' order by INST_TIME desc limit 1;"
     data3 = DataBase(which_db).get_one(sql3)
     # print(data3)
     bill_date1 = str(data3[0])
     list_data.append(bill_date1)
-    # cu_客户费用项关系信息表:放款成功u,BILL_DATE正确
-    sql5 = "select BILL_DATE from cu_cust_fee_dtl where cust_no = '" + cust_no + "';"
+    # cu_客户费用项关系信息表:放款成功 BILL_DATE正确
+    sql5 = "select BILL_DATE from cu_cust_fee_dtl where cust_no = '" + cust_no + "' order by INST_TIME desc limit 1;"
     data5 = DataBase(which_db).get_one(sql5)
     # print(data5)
     bill_date2 = str(data5[0])
@@ -41,13 +41,13 @@ def check_table_success(cust_no):
     tran_stat = str(data6[0])
     list_data.append(tran_stat)
     # fin_账户信息表，BILL_DATE正确
-    sql7 = "select BILL_DATE from fin_account_info where ACCOUNT_NO = '" + account_no + "';"
+    sql7 = "select BILL_DATE from fin_account_info where ACCOUNT_NO = '" + account_no + "' order by INST_TIME desc limit 1;"
     data7 = DataBase(which_db).get_one(sql7)
     # print(data7)
     bill_date3 = str(data7[0])
     list_data.append(bill_date3)
     # lo_放款信息表 【放款成功,状态置为10420002成功】
-    sql8 = "select ORDER_STATUS from fin_payout_dtl where ACCOUNT_NO = '" + account_no + "' order by INST_TIME desc;"
+    sql8 = "select ORDER_STATUS from fin_payout_dtl where ACCOUNT_NO = '" + account_no + "' order by INST_TIME desc limit 1;"
     data8 = DataBase(which_db).get_one(sql8)
     # print(data8)
     order_status2 = str(data8[0])
@@ -127,6 +127,6 @@ def check_table_failure(cust_no):
     data12 = DataBase(which_db).get_one(sql12)
     print(list_data)
     list_data.append(data12)
-#if __name__ == '__main__':
+if __name__ == '__main__':
     # check_table_success('C2082111108146986254630846464')
-    # check_table_failure('C2082111108146986254630846464')
+    check_table_failure('C2082111108146986254630846464')
