@@ -125,8 +125,8 @@ def check_table_failure(cust_no):
     # fin_实付明细表【放款失败会回滚-删掉数据】
     sql12 = "select * from fin_rc_dtl where ACCOUNT_NO = '"+account_no+"';"
     data12 = DataBase(which_db).get_one(sql12)
-    print(list_data)
+    # print(list_data)
     list_data.append(data12)
-if __name__ == '__main__':
-    # check_table_success('C2082111108146986254630846464')
-    check_table_failure('C2082111108146986254630846464')
+# if __name__ == '__main__':
+#     # check_table_success('C2082111108146986254630846464')
+#     check_table_failure('C2082111108146986254630846464')

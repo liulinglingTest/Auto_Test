@@ -90,7 +90,7 @@ class DaiHou_Api_Test(unittest.TestCase):
         t = r.json()
         self.assertEqual(t['errorCode'], 0)
         list_data = check_table_success(text_data[3])
-        print(list_data)
+        # print(list_data)
         self.assertEqual(list_data[0],'10260005') # lo_loan_dtl表中贷前状态为已提现
         self.assertIsNotNone(list_data[1]) # 账单日不为空【cu_cust_bill_dtl】
         self.assertIsNotNone(list_data[2]) # 账单日不为空【cu_cust_fee_bill_dtl】
