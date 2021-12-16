@@ -19,25 +19,25 @@ class DaiHou_Api_Test(unittest.TestCase):
         date_time = DataBase(which_db).get_one(sql)
         billdate = str(date_time[0] + datetime.timedelta(days=30))
         # print(billdate)
-        # data = payout_stp_data_success_1()
-        # cust_no = data[0]
-        # loan_no = data[1]
-        # account_no = data[2]
-        # t1 = cx_lo_loan_dtl(loan_no)
+        data = payout_stp_data_success_1()
+        cust_no = data[0]
+        loan_no = data[1]
+        account_no = data[2]
+        t1 = cx_lo_loan_dtl(loan_no)
         # print(t1)
-        # self.assertEqual(t1, [('500.00', '500.00', '10260005', '10270002')])
-        #
-        # t2 = cx_pay_tran_dtl(loan_no)
-        # # print(t2)
-        # self.assertEqual(t2, [('10220002', '500.00')])
-        #
-        # t3 = cx_fin_account_info(account_no)
-        # # print(t3)
-        # self.assertIsNotNone(t3)
-        #
-        # t4 = cx_fin_payout_dtl(loan_no)
-        # # print(t4)
-        # self.assertEqual(t4, [('10420002', '500.00')])
+        self.assertEqual(t1, [('500.00', '500.00', '10260005', '10270002')])
+
+        t2 = cx_pay_tran_dtl(loan_no)
+        # print(t2)
+        self.assertEqual(t2, [('10220002', '500.00')])
+
+        t3 = cx_fin_account_info(account_no)
+        # print(t3)
+        self.assertIsNotNone(t3)
+
+        t4 = cx_fin_payout_dtl(loan_no)
+        # print(t4)
+        self.assertEqual(t4, [('10420002', '500.00')])
     def test_check_failure(self):
         '''【LanaDigital】放款成功后又失败，无还款和减免，相关10个表关键字段值核对-正案例'''
         data = payout_stp_data_failure_1()

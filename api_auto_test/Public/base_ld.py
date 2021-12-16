@@ -85,9 +85,9 @@ def payout_stp_data_success_1():
         left join cu_cust_status_info s on c.cust_no=s.cust_no
         left join cu_cust_account_dtl a on c.cust_no=a.cust_no
 		left join fin_account_info f on a.account_no=f.account_no
-        where s.STATUS='20040004' and a.REMAINING_AMT>'600' and l.before_stat='10260005' and l.is_new='10000001'
-        and l.after_stat='10270002' and f.BILL_DATE is not null and l.CUST_NO not in (
-        select CUST_NO from lo_loan_dtl where BEFORE_STAT='10260008') limit 1;'''
+        where s.STATUS='20040004' and l.before_stat='10260005' and l.is_new='10000001'
+        and l.after_stat='10270002' and f.BILL_DATE is not null 
+		order by l.INST_TIME desc limit 1;'''
     data = DataBase(which_db).get_one(sql)
     lists = list(data)
     # print(lists)
