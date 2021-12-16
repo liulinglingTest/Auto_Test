@@ -74,7 +74,23 @@ def payout_stp_data_success():
         order by l.INST_TIME desc limit 1;'''
     data = DataBase(which_db).get_one(sql)
     lists = list(data)
-    print(lists)
+    # print(lists)
+    return lists
+def payout_stp_data_success_1():
+    sql = '''#查询放款成功的用户
+        select c.CUST_NO, l.LOAN_NO, a.ACCOUNT_NO from lo_loan_dtl l 
+        left join cu_cust_reg_dtl c on c.cust_no=l.cust_no
+		left join cu_cust_bank_card_dtl b on c.CUST_NO=b.CUST_NO
+		left join pay_tran_dtl p on p.IN_ACCT_NO=b.BANK_ACCT_NO
+        left join cu_cust_status_info s on c.cust_no=s.cust_no
+        left join cu_cust_account_dtl a on c.cust_no=a.cust_no
+		left join fin_account_info f on a.account_no=f.account_no
+        where s.STATUS='20040004' and a.REMAINING_AMT>'600' and l.before_stat='10260005' and l.is_new='10000001'
+        and l.after_stat='10270002' and f.BILL_DATE is not null and l.CUST_NO not in (
+        select CUST_NO from lo_loan_dtl where BEFORE_STAT='10260008') limit 1;'''
+    data = DataBase(which_db).get_one(sql)
+    lists = list(data)
+    # print(lists)
     return lists
 def payout_stp_data_failure():
     sql = '''#查询能够放款失败，进行回滚操作的用户
@@ -89,7 +105,22 @@ def payout_stp_data_failure():
         order by l.INST_TIME desc limit 1;'''
     data = DataBase(which_db).get_one(sql)
     lists = list(data)
-    print(lists)
+    # print(lists)
+    return lists
+def payout_stp_data_failure_1():
+    sql = '''#查询放款失败，进行回滚操作的用户
+        select c.CUST_NO, l.LOAN_NO, a.ACCOUNT_NO from lo_loan_dtl l 
+        left join cu_cust_reg_dtl c on c.cust_no=l.cust_no
+		left join cu_cust_bank_card_dtl b on c.CUST_NO=b.CUST_NO
+		left join pay_tran_dtl p on p.IN_ACCT_NO=b.BANK_ACCT_NO
+        left join cu_cust_status_info s on c.cust_no=s.cust_no
+        left join cu_cust_account_dtl a on c.cust_no= a.cust_no
+        where s.STATUS='20040004' and a.REMAINING_AMT>'600' and l.before_stat='10260009' and l.is_new='10000001'
+		and l.CUST_NO not in ( select CUST_NO from lo_loan_dtl where BEFORE_STAT='10260008')
+        order by l.INST_TIME desc limit 1;'''
+    data = DataBase(which_db).get_one(sql)
+    lists = list(data)
+    # print(lists)
     return lists
 def payout_stp_data_1():
     sql = '''#查询能够放款的用户(包含额外费用)
@@ -153,6 +184,23 @@ def repay_data():
     listd = list(lists)
     # print(listd)
     return listd
+def evaluation_registNo():
+    sql = '''#查询有客户号的手机号
+        select a.phone_no,a.cust_no,l.LOAN_NO from cu_cust_reg_dtl a 
+        left join lo_loan_dtl l on a.CUST_NO = l.CUST_NO
+        where l.LOAN_NO is not null and l.BEFORE_STAT='10260005' order by l.INST_TIME desc limit 1;'''
+    data = DataBase(which_db).get_one(sql)
+    lists = list(data)
+    return lists
+def auth_stat():
+    sql = '''#查询已经认证完成的用户
+        select c.CUST_NO,r.PHONE_NO from cu_cust_auth_dtl c
+        left join cu_cust_reg_dtl r on c.CUST_NO=r.CUST_NO
+        where c.CERT_AUTH=1 and c.KYC_AUTH=1 and c.OTHER_CONTACT_AUTH=1 and c.WORK_AUTH=1 and c.BANK_AUTH=1
+        order by c.INST_TIME desc limit 1;'''
+    data = DataBase(which_db).get_one(sql)
+    lists = list(data)
+    return lists
 # 更新密码，包含了用验证码方式注册登录的步骤
 def update_pwd(phoneNo):
     token = login_code(phoneNo)
