@@ -24,9 +24,9 @@ def cx_cu_cust_bill_dtl(cust_no):
     data = DataBase(which_db).get_one(sql)
     # print('sss',data)
     return data
-def cx_cu_cust_fee_bill_dtl(cust_no):
+def cx_cu_cust_fee_bill_dtl(loan_no):
     # cu_账单信息表【放款失败】，删除数据
-    sql = "select BILL_DATE,BILL_STATUS,SETTLEMENT_TIME from cu_cust_fee_bill_dtl where cust_no = '" + cust_no + "' order by INST_TIME desc limit 1;"
+    sql = "select BILL_DATE,BILL_STATUS,SETTLEMENT_TIME from cu_cust_fee_bill_dtl where loan_no = '" + loan_no + "' order by INST_TIME desc limit 1;"
     data = DataBase(which_db).get_one(sql)
     # print(data)
     return data
@@ -46,13 +46,6 @@ def cx_pay_tran_dtl(loan_no):
     # print(data)
     lists = zhuan_huan(data)
     return lists
-def cx_fin_account_info(account_no):
-    # fin_账户信息表，BILL_DATE正确
-    # fin_账户信息表，BILL_DATE回滚置空，支付只维护第一次放款失败，【放款失败会回滚】
-    sql = "select BILL_DATE from fin_account_info where ACCOUNT_NO = '" + account_no + "' order by INST_TIME desc limit 1;"
-    data = DataBase(which_db).get_one(sql)
-    # print(data)
-    return data
 def cx_fin_payout_dtl(loan_no):
     # fin_payout_dtl 【放款成功,状态置为10420002成功】
     # fin_payout_dtl 【放款失败会回滚,状态置为10420003失败】

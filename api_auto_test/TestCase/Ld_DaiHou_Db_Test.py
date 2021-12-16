@@ -31,13 +31,9 @@ class DaiHou_Api_Test(unittest.TestCase):
         # print(t2)
         self.assertEqual(t2, [('10220002', '500.00')])
 
-        t3 = cx_fin_account_info(account_no)
+        t3 = cx_fin_payout_dtl(loan_no)
         # print(t3)
-        self.assertIsNotNone(t3)
-
-        t4 = cx_fin_payout_dtl(loan_no)
-        # print(t4)
-        self.assertEqual(t4, [('10420002', '500.00')])
+        self.assertEqual(t3, [('10420002', '500.00')])
     def test_check_failure(self):
         '''【LanaDigital】放款成功后又失败，无还款和减免，相关10个表关键字段值核对-正案例'''
         data = payout_stp_data_failure_1()
@@ -60,29 +56,25 @@ class DaiHou_Api_Test(unittest.TestCase):
         # print(t4)
         self.assertEqual(t4, [('10220003', '0.00')])
 
-        t5 = cx_fin_account_info(account_no)
-        # print(t5)
-        self.assertEqual(t5, (None,))
-
         t6 = cx_fin_payout_dtl(loan_no)
         # print(t6)
-        self.assertEqual(t6, [( '10420003', '500.00')])
+        self.assertEqual(t6, [( '10420002', '500.00')])
 
-        t7 = cx_fin_account_turnover_dtl(account_no)
-        # print(t7)
-        self.assertIsNone(t7)
+        # t7 = cx_fin_account_turnover_dtl(account_no)
+        # # print(t7)
+        # self.assertIsNone(t7)
 
-        t8 = cx_fin_ad_dtl(account_no)
-        # print(t8)
-        self.assertIsNone(t8)
-
-        t9 = cx_fin_ad_record(account_no)
-        # print(t9)
-        self.assertIsNone(t9)
-
-        t10 = cx_fin_rc_dtl(account_no)
-        # print(t10)
-        self.assertIsNone(t10)
+        # t8 = cx_fin_ad_dtl(account_no)
+        # # print(t8)
+        # self.assertIsNone(t8)
+        #
+        # t9 = cx_fin_ad_record(account_no)
+        # # print(t9)
+        # self.assertIsNone(t9)
+        #
+        # t10 = cx_fin_rc_dtl(account_no)
+        # # print(t10)
+        # self.assertIsNone(t10)
     @classmethod
     def tearDownClass(cls): # 在所有用例都执行完之后运行的
         print("我是tearDownClass，我位于所有用例运行的结束")
