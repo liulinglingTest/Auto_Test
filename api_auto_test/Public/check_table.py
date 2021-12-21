@@ -77,6 +77,12 @@ def cx_fin_rc_dtl(account_no):
     sql = "select REAL_PAY_AMT,RC_STAT from fin_rc_dtl where ACCOUNT_NO = '" + account_no + "';"
     data = DataBase(which_db).get_one(sql)
     return data
+def cx_lo_loan_payout_dtl(loan_no):
+    # lo_loan_payout_dtl实付表
+    sql = "select TRAN_TYPE,ORDER_AMT,ORDER_STATUS from lo_loan_payout_dtl where LOAN_NO='" + loan_no + "';"
+    data = DataBase(which_db).get_one(sql)
+    lists = zhuan_huan(data)
+    return lists
 # if __name__ == '__main__':
 #     # check_table_success('C2082111108146986254630846464')
 #     check_table_failure('C2082111058144858471813283840')

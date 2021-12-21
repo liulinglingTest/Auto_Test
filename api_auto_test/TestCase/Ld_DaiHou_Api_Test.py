@@ -26,6 +26,7 @@ class DaiHou_Api_Test(unittest.TestCase):
     def test_payment_detail_1(self):
         '''【LanaDigital】/api/credit/payment/detail提现详情接口(包含额外费用)-正案例'''
         text_data = payout_stp_data_1()
+        # print(text_data)
         head = login_code(text_data)
         r = requests.post(host_api + '/api/credit/payment/detail', headers=head, verify=False)
         t = r.json()
@@ -52,6 +53,7 @@ class DaiHou_Api_Test(unittest.TestCase):
     def test_credit_payment_1(self):
         '''【LanaDigital】/api/credit/payment用户提现接口-正案例(没有正在处理的贷款，允许再次提现)'''
         text_data = payout_stp_data_3()
+        # print(text_data)
         head = login_code(text_data[0])
         amt = '500'
         data = {"withdrawAmt": amt}
@@ -80,6 +82,7 @@ class DaiHou_Api_Test(unittest.TestCase):
     def test_payout_stp_1(self):
         '''【LanaDigital】/api/web_hook/payout/stp模拟stp放款回调成功接口-正案例'''
         text_data = payout_stp_data_success()
+        # print(text_data)
         folioOrigen = text_data[0]
         id = text_data[1]
         head = login_code(text_data[2])

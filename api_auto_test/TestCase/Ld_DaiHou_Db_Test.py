@@ -34,6 +34,10 @@ class DaiHou_Api_Test(unittest.TestCase):
         t3 = cx_fin_payout_dtl(loan_no)
         # print(t3)
         self.assertEqual(t3, [('10420002', '500.00')])
+
+        t4 = cx_lo_loan_payout_dtl(loan_no)
+        # print(t4)
+        self.assertEqual(t4, [('10290002', '500.00', '10420002')])
     def test_check_failure(self):
         '''【LanaDigital】放款成功后又失败，无还款和减免，相关10个表关键字段值核对-正案例'''
         data = payout_stp_data_failure_1()
