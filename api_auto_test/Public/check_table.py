@@ -84,5 +84,3 @@ def cx_lo_loan_payout_dtl(loan_no):
     lists = zhuan_huan(data)
     return lists
 # if __name__ == '__main__':
-#     # check_table_success('C2082111108146986254630846464')
-#     check_table_failure('C2082111058144858471813283840')

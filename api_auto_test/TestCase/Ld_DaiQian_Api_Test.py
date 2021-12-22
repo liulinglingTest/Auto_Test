@@ -105,7 +105,7 @@ class DaiQian_Api_Test(unittest.TestCase):
         t = r.json()
         self.assertEqual(t['errorCode'], 0)
         self.assertEqual(t['data']['authSuccess'], True)
-        sql = "select WORK_AUTH from cu_cust_auth_dtl  where CUST_NO='" + custNo + "';"  # cu_客户认证信息明细表
+        sql = "select WORK_AUTH from cu_cust_auth_dtl where CUST_NO='" + custNo + "';"  # cu_客户认证信息明细表
         work_auth = DataBase(which_db).get_one(sql)
         self.assertEqual(work_auth[0], 1)
     def test_app_grab_data(self):
@@ -115,29 +115,95 @@ class DaiQian_Api_Test(unittest.TestCase):
         phoneNo = test_data[0]
         head = test_data[2]
         #设备信息
-        data1 = {"custNo": custNo, "dataType": "11090003", "grabData": {"deviceId": "28884415e8dc4bc3please open wifiSM-A5160", "imei": "28884415e8dc4bc3",
-        "ipAddress": "192.168.20.100", "ipResolveCit": "", "ipResolveCom": "", "mac": "please open wifi", "mobileBrand": "samsung", "mobileModel": "SM-A5160",
-        "otherInfo": "API:,30,deviceId:28884415e8dc4bc3,dield:unknown", "phoneNo": phoneNo, "systemVersion": "11", "userId": ""}, "loanNo": "",
-           "pageGet": "Contact", "phoneNo": phoneNo, "recordTime": "1634898295311"}
+        data1 = {"custNo": custNo,
+                 "dataType": "11090003",
+                 "grabData": {"deviceId": "28884415e8dc4bc3please open wifiSM-A5160",
+                              "imei": "28884415e8dc4bc3",
+                              "ipAddress": "192.168.20.100",
+                              "ipResolveCit": "",
+                              "ipResolveCom": "",
+                              "mac": "please open wifi",
+                              "mobileBrand": "samsung",
+                              "mobileModel": "SM-A5160",
+                              "otherInfo": "API:,30,deviceId:28884415e8dc4bc3,dield:unknown",
+                              "phoneNo": phoneNo,
+                              "systemVersion": "11",
+                              "userId": ""},
+                 "loanNo": "",
+                 "pageGet": "Contact",
+                 "phoneNo": phoneNo,
+                 "recordTime": "1634898295311"}
         #联系人
-        data2 = {"custNo": custNo, "dataType": "11090002", "grabData": {"data": [{"contactName": "5qV0PQ", "contactNo": "8293338387", "deviceId": "28884415e8dc4bc3please open wifiSM-A5160",
-        "imei": "28884415e8dc4bc3", "mac": "A2:B4:74:63:FB:40", "phoneNo": phoneNo, "recordBehavior": "联系人列表抓取", "recordTime": 1634898331133, "userId": ""},
-        {"contactName": "KlMwSp", "contactNo": "8451760297", "deviceId": "28884415e8dc4bc3please open wifiSM-A5160", "imei": "28884415e8dc4bc3",
-        "mac": "A2:B4:74:63:FB:40", "phoneNo": phoneNo, "recordBehavior": "联系人列表抓取", "recordTime": 1634898331283, "userId": ""}]}, "loanNo": "",
-        "pageGet": "Contact", "phoneNo": phoneNo, "recordTime": "1634898388674"}
+        data2 = {"custNo": custNo,
+                 "dataType": "11090002",
+                 "grabData": {"data": [{"contactName": "5qV0PQ",
+                                        "contactNo": "8293338387",
+                                        "deviceId": "28884415e8dc4bc3please open wifiSM-A5160",
+                                        "imei": "28884415e8dc4bc3",
+                                        "mac": "A2:B4:74:63:FB:40",
+                                        "phoneNo": phoneNo,
+                                        "recordBehavior": "联系人列表抓取",
+                                        "recordTime": 1634898331133,
+                                        "userId": ""},
+                                       {"contactName": "KlMwSp",
+                                        "contactNo": "8451760297",
+                                        "deviceId": "28884415e8dc4bc3please open wifiSM-A5160",
+                                        "imei": "28884415e8dc4bc3",
+                                        "mac": "A2:B4:74:63:FB:40",
+                                        "phoneNo": phoneNo,
+                                        "recordBehavior": "联系人列表抓取",
+                                        "recordTime": 1634898331283,
+                                        "userId": ""}]},
+                 "loanNo": "",
+                 "pageGet": "Contact",
+                 "phoneNo": phoneNo,
+                 "recordTime": "1634898388674"}
         #短信内容
-        data3 = {"custNo": custNo, "dataType": "11090005", "grabData": {"data": [{"address": "+525590632527", "body": "[AprestamoPlus] Felicitaciones https://bit.ly/3xBJoCT",
-        "date": 1634890751559, "kind": "11140002", "receiver": "-1491790776", "sender": "+525590632527"}]}, "loanNo": "", "pageGet": "Contact", "phoneNo": phoneNo,
-        "recordTime": "1634898295245"}
+        data3 = {"custNo": custNo,
+                 "dataType": "11090005",
+                 "grabData": {"data": [{"address": "+525590632527",
+                                        "body": "[AprestamoPlus] Felicitaciones https://bit.ly/3xBJoCT",
+                                        "date": 1634890751559,
+                                        "kind": "11140002",
+                                        "receiver": "-1491790776",
+                                        "sender": "+525590632527"}]},
+                 "loanNo": "",
+                 "pageGet": "Contact",
+                 "phoneNo": phoneNo,
+                 "recordTime": "1634898295245"}
         #位置信息
-        data4 = {"custNo": custNo, "dataType": "11090004", "grabData": {"deviceId": "66af3c496c59bc733a:1e:f6:81:46:daV2031A", "imei": "66af3c496c59bc73",
-        "latitude": "104.062505", "longitude": "30.550497", "mac": "3a:1e:f6:81:46:da", "phoneNo": phoneNo, "userId": ""}, "loanNo": "",
-        "pageGet": "Contact", "phoneNo": phoneNo, "recordTime": "1635147615526"}
+        data4 = {"custNo": custNo,
+                 "dataType": "11090004",
+                 "grabData": {"deviceId": "66af3c496c59bc733a:1e:f6:81:46:daV2031A",
+                              "imei": "66af3c496c59bc73",
+                              "latitude": "104.062505",
+                              "longitude": "30.550497",
+                              "mac": "3a:1e:f6:81:46:da",
+                              "phoneNo": phoneNo,
+                              "userId": ""},
+                 "loanNo": "",
+                 "pageGet": "Contact",
+                 "phoneNo": phoneNo,
+                 "recordTime": "1635147615526"}
         #已安装应用
-        data5 = {"custNo": custNo, "dataType": "11090001", "grabData": {"data": [{"appName": "GBA Service", "appPackage": "com.mediatek.gba", "appVersionNo":"29",
-        "deviceId": "66af3c496c59bc733a:1e:f6:81:46:daV2031A", "imei": "66af3c496c59bc73", "installTime": "1230768000000", "lastUpdateTime": "1230768000000",
-        "mac": "3a:1e:f6:81:46:da", "phoneNo": phoneNo, "recordBehavior": "Contact", "recordTime": 1635147615405, "userId": ""}]}, "loanNo": "",
-        "pageGet": "Contact", "phoneNo": phoneNo, "recordTime": "1635147616281"}
+        data5 = {"custNo": custNo,
+                 "dataType": "11090001",
+                 "grabData": {"data": [{"appName": "GBA Service",
+                                        "appPackage": "com.mediatek.gba",
+                                        "appVersionNo":"29",
+                                        "deviceId": "66af3c496c59bc733a:1e:f6:81:46:daV2031A",
+                                        "imei": "66af3c496c59bc73",
+                                        "installTime": "1230768000000",
+                                        "lastUpdateTime": "1230768000000",
+                                        "mac": "3a:1e:f6:81:46:da",
+                                        "phoneNo": phoneNo,
+                                        "recordBehavior": "Contact",
+                                        "recordTime": 1635147615405,
+                                        "userId": ""}]},
+                 "loanNo": "",
+                 "pageGet": "Contact",
+                 "phoneNo": phoneNo,
+                 "recordTime": "1635147616281"}
         data0 = [data1, data2, data3, data4, data5]
         for data0 in data0:
             r = requests.post(host_api + '/api/common/grab/app_grab_data', data=json.dumps(data0), headers=head, verify=False)  #抓取用户手机短信，通讯录，已安装app等信息
@@ -152,7 +218,17 @@ class DaiQian_Api_Test(unittest.TestCase):
         # print('custNo---',custNo)
         # sql = "UPDATE cu_cust_auth_dtl set cert_auth='1', kyc_auth = '1', work_auth = '1' WHERE CUST_NO='"+custNo+"';"
         # DataBase(which_db).executeUpdateSql(sql)
-        data = {"custNo": custNo, "contacts": [{"custNo": custNo, "name": "Advance Talktime", "phone": "52141", "relationship": "10110004", "relationshipName": "Hermanos"}, {"custNo": custNo, "name": "Cricket", "phone": "543212601", "relationship": "10110001", "relationshipName": "Padres"}]}
+        data = {"custNo": custNo,
+                "contacts": [{"custNo": custNo,
+                              "name": "Advance Talktime",
+                              "phone": "52141",
+                              "relationship": "10110004",
+                              "relationshipName": "Hermanos"},
+                             {"custNo": custNo,
+                              "name": "Cricket",
+                              "phone": "543212601",
+                              "relationship": "10110001",
+                              "relationshipName": "Padres"}]}
         r = requests.post(host_api + '/api/cust/auth/other/contact', data=json.dumps(data), headers=head, verify=False)#最后一步，填写2个联系人的联系方式
         t = r.json()
         # print(t)
@@ -179,7 +255,10 @@ class DaiQian_Api_Test(unittest.TestCase):
         test_data = for_apply_loan()
         custNo = test_data[0]
         head = test_data[1]
-        data = {"bankCode": "10020008", "bankCodeName": "BBVA BANCOMER", "clabe": "012121212121212128", "custNo": custNo}
+        data = {"bankCode": "10020008",
+                "bankCodeName": "BBVA BANCOMER",
+                "clabe": "012121212121212128",
+                "custNo": custNo}
         r = requests.post(host_api + '/api/cust/auth/bank', data=json.dumps(data), headers=head, verify=False)
         self.assertEqual(r.status_code, 200)
         t = r.json()
@@ -188,21 +267,25 @@ class DaiQian_Api_Test(unittest.TestCase):
         DataBase(which_db).executeUpdateSql(sql)  #防止被真实放款给该银行卡
     def test_bank_auth_02(self):
         '''【LanaDigital】/api/cust/auth/bank绑定银行卡接口(有在贷不能更换银行卡)-正案例'''
-        list = cx_registNo_04()
+        list = cx_registNo_bank()
         registNo = list[0]
         # print(registNo)
         custNo = list[1]
         headt_api = login_code(registNo)
-        data = {"bankCode": "10020037", "clabe": "138455214411441118", "custNo": custNo}
+        data = {"bankCode": "10020037",
+                "clabe": "138455214411441118",
+                "custNo": custNo}
         r = requests.post(host_api + '/api/cust/auth/bank', data=json.dumps(data), headers=headt_api, verify=False)
         t = r.json()
         self.assertEqual(t['errorCode'], 30001)
         self.assertEqual(t['message'], 'Su préstamo no ha sido liquidado y CLABE no se puede modificar temporalmente. Modifíquelo después de que se complete el pago.')
     def test_bank_auth_03(self):
         '''【lanaPlus】/api/cust/auth/bank绑定银行卡接口(客户未认证，不能绑卡)-正案例'''
-        registNo = cx_registNo_07()
+        registNo = cx_registNo_08()
         headt_api = login_code(registNo)
-        data = {"bankCode": "10020037", "clabe": "138455214411441118", "custNo": ''}
+        data = {"bankCode": "10020037",
+                "clabe": "138455214411441118",
+                "custNo": ''}
         r = requests.post(host_api + '/api/cust/auth/bank', data=json.dumps(data), headers=headt_api, verify=False)
         t = r.json()
         # print(t)
@@ -213,8 +296,13 @@ class DaiQian_Api_Test(unittest.TestCase):
         registNo = '1166777777'
         headt_api_f = login_code_f(registNo)
         custNo = 'C2082111048144516475940700160'
-        files = {'custNo': (None, custNo), 'phoneNo': (None, registNo), 'feedbackDesc': (None, 'test-test'), 'feedbackType': (None, '11110003'), 'feedbackPage': (None, 'CLABE'),
-               'feedbackOption': (None, 'No sé cuál es mi cuenta CLABE'), 'imgs': ('key.png', open(r'D:\pic\app.jpg', 'rb'), 'text/plain')}
+        files = {'custNo': (None, custNo),
+                 'phoneNo': (None, registNo),
+                 'feedbackDesc': (None, 'test-test'),
+                 'feedbackType': (None, '11110003'),
+                 'feedbackPage': (None, 'CLABE'),
+               'feedbackOption': (None, 'No sé cuál es mi cuenta CLABE'),
+                 'imgs': ('key.png', open(r'D:\pic\app.jpg', 'rb'), 'text/plain')}
         r = requests.post(host_api + '/api/hook/feedback', files=files, headers=headt_api_f, verify=False)
         t = r.json()
         #print(t)
@@ -301,7 +389,7 @@ class DaiQian_Api_Test(unittest.TestCase):
         "{'valName': 'Teléfono', 'valCode': '11110014', 'options': ['Cambiar el número de teléfono móvil.', 'Error al registrar el número de teléfono móvil.', 'Número de teléfono incompatible.']}]")
     def test_get_state_codes(self):
         '''【LanaDigital】/api/common/code/STATE获取州列表接口-正案例'''
-        registNo = cx_registNo_07()
+        registNo = cx_registNo_08()
         headt_api = login_code(registNo)
         r = requests.get(host_api + '/api/common/code/STATE', headers=headt_api,verify=False)
         t = r.json()
@@ -342,7 +430,7 @@ class DaiQian_Api_Test(unittest.TestCase):
         "{'codeName': 'Zacatecas', 'codeValue': '11130032', 'note': None}]")
     def test_get_marriage_codes(self):
         '''【LanaDigital】/api/common/code/MARRIAGE获取婚姻码值接口-正案例'''
-        registNo = cx_registNo_07()
+        registNo = cx_registNo_08()
         headt_api = login_code(registNo)
         r = requests.get(host_api + '/api/common/code/MARRIAGE', headers=headt_api,verify=False)
         t = r.json()
@@ -356,7 +444,7 @@ class DaiQian_Api_Test(unittest.TestCase):
         "{'codeName': 'Viudo', 'codeValue': '10050003', 'note': None}]")
     def test_get_contactType_codes(self):
         '''【LanaDigital】/api/common/code/CONTACT_TYPE获取联系人类型码值接口-正案例'''
-        registNo = cx_registNo_07()
+        registNo = cx_registNo_08()
         headt_api = login_code(registNo)
         r = requests.get(host_api + '/api/common/code/CONTACT_TYPE', headers=headt_api,verify=False)
         t = r.json()
@@ -370,7 +458,7 @@ class DaiQian_Api_Test(unittest.TestCase):
         "{'codeName': 'uno mismo', 'codeValue': '10110005', 'note': None}]")
     def test_get_education_codes(self):
         '''【LanaDigital】/api/common/code/EDUCATION获取教育类型码值接口-正案例'''
-        registNo = cx_registNo_07()
+        registNo = cx_registNo_08()
         headt_api = login_code(registNo)
         r = requests.get(host_api + '/api/common/code/EDUCATION', headers=headt_api,verify=False)
         t = r.json()
@@ -385,7 +473,7 @@ class DaiQian_Api_Test(unittest.TestCase):
         "{'codeName': 'Secundaria', 'codeValue': '10190003', 'note': None}]")
     def test_get_jobType_codes(self):
         '''【LanaDigital】/api/common/code/JOB_TYPE获取工作类型码值接口-正案例'''
-        registNo = cx_registNo_07()
+        registNo = cx_registNo_08()
         headt_api = login_code(registNo)
         r = requests.get(host_api + '/api/common/code/JOB_TYPE', headers=headt_api,verify=False)
         t = r.json()
@@ -400,7 +488,7 @@ class DaiQian_Api_Test(unittest.TestCase):
         "{'codeName': 'Jubilado', 'codeValue': '10130005', 'note': None}]")
     def test_get_income_codes(self):
         '''【LanaDigital】/api/common/code/INCOME获取收入码值接口-正案例'''
-        registNo = cx_registNo_07()
+        registNo = cx_registNo_08()
         headt_api = login_code(registNo)
         r = requests.get(host_api + '/api/common/code/INCOME', headers=headt_api,verify=False)
         t = r.json()
@@ -414,7 +502,7 @@ class DaiQian_Api_Test(unittest.TestCase):
         "{'codeName': 'Más de $24000', 'codeValue': '10870005', 'note': None}]")
     def test_get_industry_codes(self):
         '''【LanaDigital】/api/common/code/INDUSTRY获取行业码值接口-正案例'''
-        registNo = cx_registNo_07()
+        registNo = cx_registNo_08()
         headt_api = login_code(registNo)
         r = requests.get(host_api + '/api/common/code/INDUSTRY', headers=headt_api,verify=False)
         t = r.json()
@@ -439,7 +527,7 @@ class DaiQian_Api_Test(unittest.TestCase):
         "{'codeName': 'Transporte privado', 'codeValue': '10860013', 'note': None}]")
     def test_get_fileType_codes(self):
         '''【LanaDigital】/api/common/code/FILE_TYPE获取文件类型码值接口-正案例'''
-        registNo = cx_registNo_07()
+        registNo = cx_registNo_08()
         headt_api = login_code(registNo)
         r = requests.get(host_api + '/api/common/code/FILE_TYPE', headers=headt_api,verify=False)
         t = r.json()

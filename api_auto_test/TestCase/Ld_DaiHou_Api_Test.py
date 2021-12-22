@@ -14,8 +14,38 @@ class DaiHou_Api_Test(unittest.TestCase):
     def tearDown(self):  # 每个用例运行之后运行的
         print('teardown_test')
 
-    def test_credit_index(self):
-        '''【LanaDigital】/api/credit/index用户首页状态接口-正案例'''
+    def test_credit_index_1(self):
+        '''【LanaDigital】/api/credit/index用户首页状态接口(新客)-正案例'''
+        test_data = cx_registNo_01()
+        registNo = test_data[0]
+        head = login_code(registNo)
+        r = requests.get(host_api + '/api/credit/index', headers=head, verify=False)
+        t = r.json()
+        # print(t)
+        self.assertEqual(t['errorCode'], 0)
+        self.assertEqual(t['data']['stat'], 'NEW')
+    def test_credit_index_2(self):
+        '''【LanaDigital】/api/credit/index用户首页状态接口(逾期)-正案例'''
+        test_data = cx_registNo_02()
+        registNo = test_data[0]
+        head = login_code(registNo)
+        r = requests.get(host_api + '/api/credit/index', headers=head, verify=False)
+        t = r.json()
+        # print(t)
+        self.assertEqual(t['errorCode'], 0)
+        self.assertEqual(t['data']['stat'], 'OVERDUE')
+    def test_credit_index_3(self):
+        '''【LanaDigital】/api/credit/index用户首页状态接口(授信中)-正案例'''
+        test_data = cx_registNo_03()
+        registNo = test_data[0]
+        head = login_code(registNo)
+        r = requests.get(host_api + '/api/credit/index', headers=head, verify=False)
+        t = r.json()
+        # print(t)
+        self.assertEqual(t['errorCode'], 0)
+        self.assertEqual(t['data']['stat'], 'CREDITING')
+    def test_credit_index_3(self):
+        '''【LanaDigital】/api/credit/index用户首页状态接口(冻结)-正案例'''
         test_data = cx_registNo_04()
         registNo = test_data[0]
         head = login_code(registNo)
@@ -23,6 +53,36 @@ class DaiHou_Api_Test(unittest.TestCase):
         t = r.json()
         # print(t)
         self.assertEqual(t['errorCode'], 0)
+    def test_credit_index_5(self):
+        '''【LanaDigital】/api/credit/index用户首页状态接口(待提现)-正案例'''
+        test_data = cx_registNo_05()
+        registNo = test_data[0]
+        head = login_code(registNo)
+        r = requests.get(host_api + '/api/credit/index', headers=head, verify=False)
+        t = r.json()
+        # print(t)
+        self.assertEqual(t['errorCode'], 0)
+        self.assertEqual(t['data']['stat'], 'UNDER_WITHDRAW')
+    def test_credit_index_6(self):
+        '''【LanaDigital】/api/credit/index用户首页状态接口(锁定)-正案例'''
+        test_data = cx_registNo_06()
+        registNo = test_data[0]
+        head = login_code(registNo)
+        r = requests.get(host_api + '/api/credit/index', headers=head, verify=False)
+        t = r.json()
+        # print(t)
+        self.assertEqual(t['errorCode'], 0)
+        #self.assertEqual(t['data']['stat'], 'UNDER_WITHDRAW')
+    def test_credit_index_7(self):
+        '''【LanaDigital】/api/credit/index用户首页状态接口(撤销)-正案例'''
+        test_data = cx_registNo_07()
+        registNo = test_data[0]
+        head = login_code(registNo)
+        r = requests.get(host_api + '/api/credit/index', headers=head, verify=False)
+        t = r.json()
+        # print(t)
+        self.assertEqual(t['errorCode'], 0)
+        self.assertEqual(t['data']['stat'], 'NEW')
     def test_payment_detail_1(self):
         '''【LanaDigital】/api/credit/payment/detail提现详情接口(包含额外费用)-正案例'''
         text_data = payout_stp_data_1()
@@ -86,8 +146,13 @@ class DaiHou_Api_Test(unittest.TestCase):
         folioOrigen = text_data[0]
         id = text_data[1]
         head = login_code(text_data[2])
-        data = {"causaDevolucion": {"code": 16, "msg": "Tipo de operación errónea"}, "empresa": "ASSERTIVE",
-                "estado": {"code": "0000", "msg": "canll"}, "folioOrigen": folioOrigen, "id": id}
+        data = {"causaDevolucion": {"code": 16,
+                                    "msg": "Tipo de operación errónea"},
+                "empresa": "ASSERTIVE",
+                "estado": {"code": "0000",
+                           "msg": "canll"},
+                "folioOrigen": folioOrigen,
+                "id": id}
         r = requests.post(host_pay + '/api/web_hook/payout/stp', data=json.dumps(data), headers=head, verify=False)
         t = r.json()
         # print(t)
@@ -98,8 +163,13 @@ class DaiHou_Api_Test(unittest.TestCase):
         folioOrigen = text_data[0]
         id = text_data[1]
         head = login_code(text_data[2])
-        data = {"causaDevolucion": {"code": 16, "msg": "Tipo de operación errónea"}, "empresa": "ASSERTIVE",
-                "estado": {"code": "0002", "msg": "error"}, "folioOrigen": folioOrigen,"id": id}
+        data = {"causaDevolucion": {"code": 16,
+                                    "msg": "Tipo de operación errónea"},
+                "empresa": "ASSERTIVE",
+                "estado": {"code": "0002",
+                           "msg": "error"},
+                "folioOrigen": folioOrigen,
+                "id": id}
         r = requests.post(host_pay + '/api/web_hook/payout/stp', data=json.dumps(data), headers=head, verify=False)
         # print(r)
         t = r.json()
@@ -110,7 +180,9 @@ class DaiHou_Api_Test(unittest.TestCase):
         head = login_code(text_data[0])
         cust_no = text_data[1]
         loan_no = text_data[2]
-        data = {"custNo": cust_no,"loanNo": loan_no,"score": 2}
+        data = {"custNo": cust_no,
+                "loanNo": loan_no,
+                "score": 2}
         r = requests.post(host_api + '/api/credit/index/evaluation', data=data, headers=head, verify=False)
         t = r.json()
         # print(t)
@@ -147,15 +219,27 @@ class DaiHou_Api_Test(unittest.TestCase):
         # print(t)
         self.assertEqual(t['errorCode'], 0)
         self.assertEqual(t,
-                  {"data": {"stp": {"paymentMethod": "STP", "free": True, "recommended": True, "serviceCharge": "0.00","supportTime": "24/7"},
-                  "oxxo": {"paymentMethod": "OXXO", "free": False, "recommended": False, "serviceCharge": "12.00","supportTime": "24/7"}}, "errorCode": 0, "message": "ok"})
+                  {"data": {"stp": {"paymentMethod": "STP",
+                                    "free": True,
+                                    "recommended": True,
+                                    "serviceCharge": "0.00",
+                                    "supportTime": "24/7"},
+                            "oxxo": {"paymentMethod": "OXXO",
+                                     "free": False,
+                                     "recommended": False,
+                                     "serviceCharge": "12.00",
+                                     "supportTime": "24/7"}},
+                   "errorCode": 0,
+                   "message": "ok"})
     def test_credit_repaymentRepay_STP(self):
         '''【LanaDigital】/api/credit/repayment/repay还款获取码(STP)-正案例'''
         text_data = repay_data()
         head = login_code(text_data[0][1])
         loan_no = text_data[0][2]
         amt = text_data[0][3]
-        data = {"repaymentList": [{"loanNo": loan_no, "repayAmt": amt}], "repaymentMethod": "STP"}
+        data = {"repaymentList": [{"loanNo": loan_no,
+                                   "repayAmt": amt}],
+                "repaymentMethod": "STP"}
         r = requests.post(host_pay + '/api/credit/repayment/repay', data=json.dumps(data), headers=head, verify=False)
         t = r.json()
         # print(t)
@@ -166,7 +250,9 @@ class DaiHou_Api_Test(unittest.TestCase):
         head = login_code(text_data[0][1])
         loan_no = text_data[0][2]
         amt = text_data[0][3]
-        data = {"repaymentList": [{"loanNo": loan_no, "repayAmt": amt}], "repaymentMethod": "OXXO"}
+        data = {"repaymentList": [{"loanNo": loan_no,
+                                   "repayAmt": amt}],
+                "repaymentMethod": "OXXO"}
         r = requests.post(host_pay + '/api/credit/repayment/repay', data=json.dumps(data), headers=head, verify=False)
         t = r.json()
         # print(t)
@@ -178,10 +264,23 @@ class DaiHou_Api_Test(unittest.TestCase):
         head = login_code(text_data[0][1])
         clabe_no = text_data[0][4]
         amt = 100
-        data = {"abono": {"id": ids, "monto": amt, "cuentaBeneficiario": clabe_no, "fechaOperacion": "20210108", "institucionOrdenante": "40012",
-        "institucionBeneficiaria": "90646", "claveRastreo": "MBAN01002101080089875109", "nombreOrdenante": "HAZEL VIRIDIANA RUIZ RICO", "tipoCuentaOrdenante": "40",
-        "cuentaOrdenante": "012420028362208190", "rfcCurpOrdenante": "RURH8407075F8", "nombreBeneficiario": "STP", "tipoCuentaBeneficiario": "40",
-        "rfcCurpBeneficiario": "null", "conceptoPago": "ESTELA SOLICITO TRANSFERENCIA", "referenciaNumerica": "701210", "empresa": "QUANTX_TECH"}}
+        data = {"abono": {"id": ids,
+                          "monto": amt,
+                          "cuentaBeneficiario": clabe_no,
+                          "fechaOperacion": "20210108",
+                          "institucionOrdenante": "40012",
+                          "institucionBeneficiaria": "90646",
+                          "claveRastreo": "MBAN01002101080089875109",
+                          "nombreOrdenante": "HAZEL VIRIDIANA RUIZ RICO",
+                          "tipoCuentaOrdenante": "40",
+                          "cuentaOrdenante": "012420028362208190",
+                          "rfcCurpOrdenante": "RURH8407075F8",
+                          "nombreBeneficiario": "STP",
+                          "tipoCuentaBeneficiario": "40",
+                          "rfcCurpBeneficiario": "null",
+                          "conceptoPago": "ESTELA SOLICITO TRANSFERENCIA",
+                          "referenciaNumerica": "701210",
+                          "empresa": "QUANTX_TECH"}}
         r = requests.post(host_pay + '/api/web_hook/repay/stp', data=json.dumps(data), headers=head, verify=False)
         t = r.json()
         # print(t)
