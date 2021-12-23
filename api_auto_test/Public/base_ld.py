@@ -4,6 +4,7 @@ from Public.dataBase_ld import *
 from Public.heads_ld import *
 from Public.check_api import *
 import random,string,datetime
+
 # 短信验证码，默认手机号后4位单个+5后取个位数，在逆序排列。
 def compute_code(m):
     m = m[-4:]
@@ -13,16 +14,19 @@ def compute_code(m):
     x4 = str(int(m[3]) + 5)
     x = x4[-1:] + x3[-1:] + x2[-1:] + x1[-1:]
     return x
+
 def zhuan_huan(result):
     m = []
     m.append(result)
     t = [tuple(str(n) for n in m) for m in m]  #python列表数字里混入一个Decimal，转换方式
     return t
+
 def huoqu_user_state(registNo):
     '''/api/cust/check/user/state获取用户状态'''
     data1 = {"registNo": registNo}
     q = requests.post(host_api + "/api/cust/check/user/state", data=json.dumps(data1), headers=head_api, verify=False)
     return q.json()
+
 def cx_old_phoneNo():
     sql = '''#查询客户号不为空的用户手机号
     select PHONE_NO from cu_cust_reg_dtl where CUST_NO is not null and GAID='Exception:null' ORDER BY INST_TIME desc;'''
@@ -30,249 +34,572 @@ def cx_old_phoneNo():
     #print('phoneNo----',phoneNo)
     phoneNo = str(phoneNo[0])
     return phoneNo
+
 def cx_registNo_bank():
     sql = '''#查询手机号c.phone_no,c.cust_no,a.loan_no有在贷未结清
-        select c.phone_no,c.cust_no,a.loan_no from lo_loan_dtl a left join cu_cust_fee_bill_dtl b
-        on a.loan_no = b.loan_no left join cu_cust_reg_dtl c on a.cust_no = c.cust_no
-        where a.before_stat='10260005' and a.after_stat='10270002' or a.after_stat='10270003'
-        order by a.inst_time desc limit 1;'''
+SELECT
+	c.phone_no,
+	c.cust_no,
+	a.loan_no 
+FROM
+	lo_loan_dtl a
+	LEFT JOIN cu_cust_fee_bill_dtl b ON a.loan_no = b.loan_no
+	LEFT JOIN cu_cust_reg_dtl c ON a.cust_no = c.cust_no 
+WHERE
+	a.before_stat = '10260005' 
+	AND a.after_stat = '10270002' 
+	OR a.after_stat = '10270003' 
+ORDER BY
+	a.inst_time DESC 
+	LIMIT 1;'''
     data = DataBase(which_db).get_one(sql)
     # print(data)
     lists = list(data)
     return lists
+
 def cx_registNo_01():
     sql = '''#查询手机号c.phone_no,新客
-        select phone_no from cu_cust_reg_dtl
-        where cust_no is null
-        order by inst_time desc limit 1;'''
+SELECT
+	phone_no 
+FROM
+	cu_cust_reg_dtl 
+WHERE
+	cust_no IS NULL 
+ORDER BY
+	inst_time DESC 
+	LIMIT 1;'''
     data = DataBase(which_db).get_one(sql)
     # print(data)
     lists = list(data)
     return lists
+
 def cx_registNo_02():
     sql = '''#查询手机号c.phone_no,c.cust_no,a.loan_no逾期的用户
-        select c.phone_no,c.cust_no,a.loan_no from lo_loan_dtl a 
-        left join cu_cust_fee_bill_dtl b on a.loan_no = b.loan_no 
-        left join cu_cust_reg_dtl c on a.cust_no = c.cust_no
-		left join cu_cust_status_info s on c.CUST_NO=s.CUST_NO
-        where a.before_stat='10260005' and a.after_stat='10270003' and s.`STATUS`='20040005'
-        order by a.inst_time desc limit 1;'''
+SELECT
+	c.phone_no,
+	c.cust_no,
+	a.loan_no 
+FROM
+	lo_loan_dtl a
+	LEFT JOIN cu_cust_fee_bill_dtl b ON a.loan_no = b.loan_no
+	LEFT JOIN cu_cust_reg_dtl c ON a.cust_no = c.cust_no
+	LEFT JOIN cu_cust_status_info s ON c.CUST_NO = s.CUST_NO 
+WHERE
+	a.before_stat = '10260005' 
+	AND a.after_stat = '10270003' 
+	AND s.`STATUS` = '20040005' 
+ORDER BY
+	a.inst_time DESC 
+	LIMIT 1;'''
     data = DataBase(which_db).get_one(sql)
     # print(data)
     lists = list(data)
     return lists
+
 def cx_registNo_03():
     sql = '''#查询手机号c.phone_no,c.cust_no授信中的用户
-        select c.phone_no,c.cust_no from cu_cust_reg_dtl c on a.cust_no = c.cust_no
-		left join cu_cust_status_info s on c.CUST_NO=s.CUST_NO
-        where  s.`STATUS`='20040007'
-        order by c.inst_time desc limit 1;'''
+SELECT
+	c.phone_no,
+	c.cust_no 
+FROM
+	cu_cust_reg_dtl c ON a.cust_no = c.cust_no
+	LEFT JOIN cu_cust_status_info s ON c.CUST_NO = s.CUST_NO 
+WHERE
+	s.`STATUS` = '20040007' 
+ORDER BY
+	c.inst_time DESC 
+	LIMIT 1;'''
     data = DataBase(which_db).get_one(sql)
     # print(data)
     lists = list(data)
     return lists
+
 def cx_registNo_04():
     sql = '''#查询手机号c.phone_no,c.cust_no冻结的用户
-        select c.phone_no,c.cust_no from cu_cust_reg_dtl c
-		left join cu_cust_status_info s on c.CUST_NO=s.CUST_NO
-        where  s.`STATUS`='20040006'
-        order by c.inst_time desc limit 1;'''
+SELECT
+	c.phone_no,
+	c.cust_no 
+FROM
+	cu_cust_reg_dtl c
+	LEFT JOIN cu_cust_status_info s ON c.CUST_NO = s.CUST_NO 
+WHERE
+	s.`STATUS` = '20040006' 
+ORDER BY
+	c.inst_time DESC 
+	LIMIT 1;'''
     data = DataBase(which_db).get_one(sql)
     # print(data)
     lists = list(data)
     return lists
+
 def cx_registNo_05():
     sql = '''#查询手机号c.phone_no,c.cust_no待提现的用户
-        select c.phone_no,c.cust_no 
-        from cu_cust_reg_dtl c 
-        left join cu_cust_status_info s on c.CUST_NO=s.CUST_NO
-        where  s.`STATUS`='20040003'
-        order by c.inst_time desc limit 1;'''
+SELECT
+	c.phone_no,
+	c.cust_no 
+FROM
+	cu_cust_reg_dtl c
+	LEFT JOIN cu_cust_status_info s ON c.CUST_NO = s.CUST_NO 
+WHERE
+	s.`STATUS` = '20040003' 
+ORDER BY
+	c.inst_time DESC 
+	LIMIT 1;'''
     data = DataBase(which_db).get_one(sql)
     # print(data)
     lists = list(data)
     return lists
+
 def cx_registNo_06():
     sql = '''#查询手机号c.phone_no,c.cust_no锁定的用户
-        select c.phone_no,c.cust_no from lo_loan_dtl a left join cu_cust_fee_bill_dtl b
-        on a.loan_no = b.loan_no left join cu_cust_reg_dtl c on a.cust_no = c.cust_no
-		left join cu_cust_status_info s on c.CUST_NO=s.CUST_NO
-        where  s.`STATUS`='20040002'
-        order by a.inst_time desc limit 1;'''
+SELECT
+	c.phone_no,
+	c.cust_no 
+FROM
+	lo_loan_dtl a
+	LEFT JOIN cu_cust_fee_bill_dtl b ON a.loan_no = b.loan_no
+	LEFT JOIN cu_cust_reg_dtl c ON a.cust_no = c.cust_no
+	LEFT JOIN cu_cust_status_info s ON c.CUST_NO = s.CUST_NO 
+WHERE
+	s.`STATUS` = '20040002' 
+ORDER BY
+	a.inst_time DESC 
+	LIMIT 1;'''
     data = DataBase(which_db).get_one(sql)
     # print(data)
     lists = list(data)
     return lists
+
 def cx_registNo_07():
     sql = '''#查询手机号c.phone_no,c.cust_no撤销的用户
-        select c.phone_no,c.cust_no from cu_cust_reg_dtl c 
-		left join cu_cust_status_info s on c.CUST_NO=s.CUST_NO
-        where  s.`STATUS`='20040000'
-        order by c.inst_time desc limit 1;'''
+SELECT
+	c.phone_no,
+	c.cust_no 
+FROM
+	cu_cust_reg_dtl c
+	LEFT JOIN cu_cust_status_info s ON c.CUST_NO = s.CUST_NO 
+WHERE
+	s.`STATUS` = '20040000' 
+ORDER BY
+	c.inst_time DESC 
+	LIMIT 1;'''
     data = DataBase(which_db).get_one(sql)
     # print(data)
     lists = list(data)
     return lists
+
 def cx_registNo_08():
     sql = '''#查询无客户号的手机号
-    select a.phone_no from cu_cust_reg_dtl a where a.CUST_NO is null order by a.INST_TIME desc limit 1;'''
+SELECT
+	a.phone_no 
+FROM
+	cu_cust_reg_dtl a 
+WHERE
+	a.CUST_NO IS NULL 
+ORDER BY
+	a.INST_TIME DESC 
+	LIMIT 1;'''
     phone = DataBase(which_db).get_one(sql)
     phone = str(phone[0])
     return phone
+
 def cx_registNo_10():
     sql = '''#查询有客户号的手机号
-    select a.phone_no from cu_cust_reg_dtl a where a.CUST_NO is not null order by a.INST_TIME desc limit 1;'''
+SELECT
+	a.phone_no 
+FROM
+	cu_cust_reg_dtl a 
+WHERE
+	a.CUST_NO IS NOT NULL 
+ORDER BY
+	a.INST_TIME DESC 
+	LIMIT 1;'''
     phone = DataBase(which_db).get_one(sql)
     phone = str(phone[0])
     return phone
+
 def lay_registNo():
     sql = '''#查询进入延迟放款的用户
-        select phone_No from cu_cust_reg_dtl c left join lo_loan_payout_dtl l on c.CUST_NO=l.CUST_NO 
-        where l.ORDER_STATUS='10420005' order by c.INST_TIME desc limit 1;'''
+SELECT
+	phone_No 
+FROM
+	cu_cust_reg_dtl c
+	LEFT JOIN lo_loan_payout_dtl l ON c.CUST_NO = l.CUST_NO 
+WHERE
+	l.ORDER_STATUS = '10420005' 
+ORDER BY
+	c.INST_TIME DESC 
+	LIMIT 1;'''
     phone = DataBase(which_db).get_one(sql)
     phone = str(phone[0])
     #print(phone)
     return phone
+
 def payout_stp_data_success():
     sql = '''#查询能够放款成功的用户
-        select p.TRAN_NO,p.TRAN_ORDER_NO,c.PHONE_NO,c.CUST_NO from lo_loan_dtl l 
-        left join cu_cust_reg_dtl c on c.cust_no=l.cust_no
-		left join lo_loan_payout_dtl o on o.LOAN_NO=l.LOAN_NO
-		left join pay_tran_dtl p on p.TRAN_NO = o.ORDER_NO
-        left join cu_cust_status_info s on c.cust_no=s.cust_no
-        left join cu_cust_account_dtl a on c.cust_no= a.cust_no
-        where s.STATUS='20040004' and a.REMAINING_AMT>'600' 
-		and l.BEFORE_STAT='10260008' and o.ORDER_STATUS='10420001'
-        order by l.INST_TIME desc limit 1;'''
+SELECT
+	p.TRAN_NO,
+	p.TRAN_ORDER_NO,
+	c.PHONE_NO,
+	c.CUST_NO 
+FROM
+	lo_loan_dtl l
+	LEFT JOIN cu_cust_reg_dtl c ON c.cust_no = l.cust_no
+	LEFT JOIN lo_loan_payout_dtl o ON o.LOAN_NO = l.LOAN_NO
+	LEFT JOIN pay_tran_dtl p ON p.TRAN_NO = o.ORDER_NO
+	LEFT JOIN cu_cust_status_info s ON c.cust_no = s.cust_no
+	LEFT JOIN cu_cust_account_dtl a ON c.cust_no = a.cust_no 
+WHERE
+	s.STATUS = '20040004' 
+	AND a.REMAINING_AMT > '600' 
+	AND l.BEFORE_STAT = '10260008' 
+	AND o.ORDER_STATUS = '10420001' 
+ORDER BY
+	l.INST_TIME DESC 
+	LIMIT 1;'''
     data = DataBase(which_db).get_one(sql)
     lists = list(data)
     # print(lists)
     return lists
+
 def payout_stp_data_success_1():
     sql = '''#查询放款成功的用户
-        select c.CUST_NO, l.LOAN_NO, a.ACCOUNT_NO from lo_loan_dtl l 
-        left join cu_cust_reg_dtl c on c.cust_no=l.cust_no
-		left join cu_cust_bank_card_dtl b on c.CUST_NO=b.CUST_NO
-		left join pay_tran_dtl p on p.IN_ACCT_NO=b.BANK_ACCT_NO
-        left join cu_cust_status_info s on c.cust_no=s.cust_no
-        left join cu_cust_account_dtl a on c.cust_no=a.cust_no
-		left join fin_account_info f on a.account_no=f.account_no
-        where s.STATUS='20040004' and l.before_stat='10260005' and l.is_new='10000001'
-        and l.after_stat='10270002' and f.BILL_DATE is not null 
-		order by l.INST_TIME desc limit 1;'''
+SELECT
+	c.CUST_NO,
+	l.LOAN_NO,
+	a.ACCOUNT_NO,
+	u.ORDER_NO
+FROM
+	lo_loan_dtl l
+	LEFT JOIN cu_cust_reg_dtl c ON c.CUST_NO = l.CUST_NO
+	LEFT JOIN cu_cust_bank_card_dtl b ON c.CUST_NO = b.CUST_NO
+	LEFT JOIN pay_tran_dtl p ON p.IN_ACCT_NO = b.BANK_ACCT_NO
+	LEFT JOIN cu_cust_status_info s ON c.cust_no = s.cust_no
+	LEFT JOIN cu_cust_account_dtl a ON c.cust_no = a.cust_no
+	LEFT JOIN fin_account_info f ON a.account_no = f.account_no 
+	LEFT JOIN lo_loan_payout_dtl u ON u.LOAN_NO = l.LOAN_NO
+WHERE
+	s.STATUS = '20040004' 
+	AND l.before_stat = '10260005'  
+	AND l.after_stat = '10270002' 
+	AND f.BILL_DATE IS NOT NULL 
+ORDER BY
+	l.INST_TIME DESC 
+	LIMIT 1;'''
     data = DataBase(which_db).get_one(sql)
     lists = list(data)
     # print(lists)
     return lists
+
 def payout_stp_data_failure():
     sql = '''#查询能够放款失败，进行回滚操作的用户
-        select p.TRAN_NO,p.TRAN_ORDER_NO,c.PHONE_NO,c.CUST_NO,l.LOAN_NO from lo_loan_dtl l 
-        left join cu_cust_reg_dtl c on c.cust_no=l.cust_no
-		left join cu_cust_bank_card_dtl b on c.CUST_NO=b.CUST_NO
-		left join pay_tran_dtl p on p.IN_ACCT_NO=b.BANK_ACCT_NO
-        left join cu_cust_status_info s on c.cust_no=s.cust_no
-        left join cu_cust_account_dtl a on c.cust_no= a.cust_no
-        where s.STATUS='20040004' and a.REMAINING_AMT>'600' and l.before_stat='10260005'
-		and l.CUST_NO not in ( select CUST_NO from lo_loan_dtl where BEFORE_STAT='10260008')
-        order by l.INST_TIME desc limit 1;'''
+    SELECT
+	p.TRAN_NO,
+	p.TRAN_ORDER_NO,
+	c.PHONE_NO,
+	c.CUST_NO,
+	l.LOAN_NO 
+FROM
+	lo_loan_dtl l
+	LEFT JOIN cu_cust_reg_dtl c ON c.cust_no = l.cust_no
+	LEFT JOIN cu_cust_bank_card_dtl b ON c.CUST_NO = b.CUST_NO
+	LEFT JOIN pay_tran_dtl p ON p.IN_ACCT_NO = b.BANK_ACCT_NO
+	LEFT JOIN cu_cust_status_info s ON c.cust_no = s.cust_no
+	LEFT JOIN cu_cust_account_dtl a ON c.cust_no = a.cust_no 
+WHERE
+	s.STATUS = '20040004' 
+	AND a.REMAINING_AMT > '600' 
+	AND l.before_stat = '10260005' 
+	AND l.CUST_NO NOT IN ( SELECT CUST_NO FROM lo_loan_dtl WHERE BEFORE_STAT = '10260008' ) 
+ORDER BY
+	l.INST_TIME DESC 
+	LIMIT 1;'''
     data = DataBase(which_db).get_one(sql)
     lists = list(data)
     # print(lists)
     return lists
+
 def payout_stp_data_failure_1():
     sql = '''#查询放款失败，进行回滚操作的用户
-        select c.CUST_NO, l.LOAN_NO, a.ACCOUNT_NO from lo_loan_dtl l 
-        left join cu_cust_reg_dtl c on c.cust_no=l.cust_no
-		left join cu_cust_bank_card_dtl b on c.CUST_NO=b.CUST_NO
-		left join pay_tran_dtl p on p.IN_ACCT_NO=b.BANK_ACCT_NO
-        left join cu_cust_status_info s on c.cust_no=s.cust_no
-        left join cu_cust_account_dtl a on c.cust_no= a.cust_no
-        where s.STATUS='20040004' and a.REMAINING_AMT>'600' and l.before_stat='10260009' and l.is_new='10000001'
-		and l.CUST_NO not in ( select CUST_NO from lo_loan_dtl where BEFORE_STAT='10260008')
-        order by l.INST_TIME desc limit 1;'''
+    SELECT
+	c.CUST_NO,
+	l.LOAN_NO,
+	a.ACCOUNT_NO,
+	u.ORDER_NO
+FROM
+	lo_loan_dtl l
+	LEFT JOIN cu_cust_reg_dtl c ON c.cust_no = l.cust_no
+	LEFT JOIN cu_cust_bank_card_dtl b ON c.CUST_NO = b.CUST_NO
+	LEFT JOIN pay_tran_dtl p ON p.IN_ACCT_NO = b.BANK_ACCT_NO
+	LEFT JOIN cu_cust_status_info s ON c.cust_no = s.cust_no
+	LEFT JOIN cu_cust_account_dtl a ON c.cust_no = a.cust_no
+	LEFT JOIN lo_loan_payout_dtl u ON u.LOAN_NO = l.LOAN_NO
+WHERE
+	s.STATUS = '20040004' 
+	AND a.REMAINING_AMT > '600' 
+	AND l.before_stat = '10260009' 
+	AND l.IS_NEW='10000001'
+	AND l.CUST_NO NOT IN ( SELECT CUST_NO FROM lo_loan_dtl WHERE BEFORE_STAT = '10260008' ) 
+ORDER BY
+	l.INST_TIME DESC 
+	LIMIT 1;'''
     data = DataBase(which_db).get_one(sql)
     lists = list(data)
     # print(lists)
     return lists
+
 def payout_stp_data_1():
     sql = '''#查询能够放款的用户(包含额外费用)
-        select c.PHONE_NO from cu_cust_reg_dtl c left join cu_cust_status_info s on c.CUST_NO=s.CUST_NO
-        left join cu_cust_account_dtl a on a.CUST_NO=s.CUST_NO
-        where s.`STATUS`='20040003'and a.REMAINING_AMT>'600' ORDER BY s.INST_TIME desc limit 1;'''
+SELECT
+	c.PHONE_NO 
+FROM
+	cu_cust_reg_dtl c
+	LEFT JOIN cu_cust_status_info s ON c.CUST_NO = s.CUST_NO
+	LEFT JOIN cu_cust_account_dtl a ON a.CUST_NO = s.CUST_NO 
+WHERE
+	s.`STATUS` = '20040003' 
+	AND a.REMAINING_AMT > '600' 
+ORDER BY
+	s.INST_TIME DESC 
+	LIMIT 1;'''
     data = DataBase(which_db).get_one(sql)
     phone = str(data[0])
     return phone
+
 def payout_stp_data_2():
     sql = '''#查询能够放款的用户(不包含额外费用)
-        select c.PHONE_NO,a.REMAINING_AMT,l.CUST_NO from lo_loan_dtl l 
-        left join cu_cust_reg_dtl c on c.cust_no=l.cust_no
-        left join cu_cust_status_info s on c.cust_no=s.cust_no
-        left join cu_cust_account_dtl a on c.cust_no= a.cust_no
-        where s.STATUS='20040004' and a.REMAINING_AMT>'600' and l.CUST_NO not in (
-        select CUST_NO from lo_loan_dtl where BEFORE_STAT='10260008')
-        order by l.INST_TIME desc limit 1;'''
+SELECT
+	c.PHONE_NO,
+	a.REMAINING_AMT,
+	l.CUST_NO 
+FROM
+	lo_loan_dtl l
+	LEFT JOIN cu_cust_reg_dtl c ON c.cust_no = l.cust_no
+	LEFT JOIN cu_cust_status_info s ON c.cust_no = s.cust_no
+	LEFT JOIN cu_cust_account_dtl a ON c.cust_no = a.cust_no 
+WHERE
+	s.STATUS = '20040004' 
+	AND a.REMAINING_AMT > '600' 
+	AND l.CUST_NO NOT IN ( SELECT CUST_NO FROM lo_loan_dtl WHERE BEFORE_STAT = '10260008' ) 
+ORDER BY
+	l.INST_TIME DESC 
+	LIMIT 1;'''
     data = DataBase(which_db).get_one(sql)
     lists = list(data)
     return lists
+
 def payout_stp_data_3():
     sql = '''#查询能够放款的用户(没有正在处理的贷款，允许再次提现)
-        select c.PHONE_NO,l.CUST_NO from lo_loan_dtl l 
-        left join cu_cust_reg_dtl c on c.cust_no=l.cust_no
-        left join cu_cust_status_info s on c.cust_no=s.cust_no
-        left join cu_cust_account_dtl a on c.cust_no= a.cust_no
-        where s.STATUS='20040004' and a.REMAINING_AMT>'600' and l.CUST_NO not in (
-        select CUST_NO from lo_loan_dtl where BEFORE_STAT='10260008')
-        order by l.INST_TIME desc limit 1;'''
+SELECT
+	c.PHONE_NO,
+	l.CUST_NO 
+FROM
+	lo_loan_dtl l
+	LEFT JOIN cu_cust_reg_dtl c ON c.cust_no = l.cust_no
+	LEFT JOIN cu_cust_status_info s ON c.cust_no = s.cust_no
+	LEFT JOIN cu_cust_account_dtl a ON c.cust_no = a.cust_no 
+WHERE
+	s.STATUS = '20040004' 
+	AND a.REMAINING_AMT > '600' 
+	AND l.CUST_NO NOT IN ( SELECT CUST_NO FROM lo_loan_dtl WHERE BEFORE_STAT = '10260008' ) 
+ORDER BY
+	l.INST_TIME DESC 
+	LIMIT 1;'''
     data = DataBase(which_db).get_one(sql)
     #print(data)
     lists = list(data)
     return lists
+
 def payout_stp_data_4():
     sql = '''#查询能够放款的用户(有正在处理的贷款，不允许再次提现)
-        select c.PHONE_NO,a.REMAINING_AMT from cu_cust_reg_dtl c
-        left join cu_cust_status_info s on c.cust_no=s.cust_no
-        left join cu_cust_account_dtl a on c.cust_no= a.cust_no
-        left join lo_loan_dtl l on c.cust_no=l.cust_no
-        where s.STATUS='20040004' and a.REMAINING_AMT>'600' and l.before_stat='10260008'
-        order by c.INST_TIME desc limit 1;'''
+SELECT
+	c.PHONE_NO,
+	a.REMAINING_AMT 
+FROM
+	cu_cust_reg_dtl c
+	LEFT JOIN cu_cust_status_info s ON c.cust_no = s.cust_no
+	LEFT JOIN cu_cust_account_dtl a ON c.cust_no = a.cust_no
+	LEFT JOIN lo_loan_dtl l ON c.cust_no = l.cust_no 
+WHERE
+	s.STATUS = '20040004' 
+	AND a.REMAINING_AMT > '600' 
+	AND l.before_stat = '10260008' 
+ORDER BY
+	c.INST_TIME DESC 
+	LIMIT 1;'''
     data = DataBase(which_db).get_one(sql)
     #print(data)
     lists = list(data)
     return lists
-def repay_data():
-    sql1 = '''#查询能够还款的用户
-        select a.CUST_NO,c.PHONE_NO,l.LOAN_NO,SUM(f.RECEIVE_AMT),u.CLABE_NO from cu_cust_reg_dtl c 
-        left join cu_cust_account_dtl a on c.CUST_NO=a.CUST_NO 
-        left join fin_ad_dtl f on f.ACCOUNT_NO = a.ACCOUNT_NO
-        left join lo_loan_dtl l on l.CUST_NO=a.CUST_NO
-        left join lo_loan_payout_dtl p on l.LOAN_NO=p.LOAN_NO
-		left join fin_clabe_usable_dtl u on u.ACCOUNT_NO = a.ACCOUNT_NO
-        GROUP BY f.RECEIVE_AMT HAVING sum(f.RECEIVE_AMT>0) 
-        ORDER BY a.INST_TIME desc limit 1;'''
-    data = DataBase(which_db).get_one(sql1)
+
+def repay_data_1():
+    sql = '''#查询能够还款的用户,贷后正常
+SELECT
+	a.CUST_NO,
+	c.PHONE_NO,
+	l.LOAN_NO,
+	p.ORDER_NO,
+	a.ACCOUNT_NO 
+FROM
+	cu_cust_reg_dtl c
+	LEFT JOIN cu_cust_status_info s ON c.cust_no = s.cust_no
+	LEFT JOIN cu_cust_account_dtl a ON c.CUST_NO = a.CUST_NO
+	LEFT JOIN fin_ad_dtl f ON f.ACCOUNT_NO = a.ACCOUNT_NO
+	LEFT JOIN lo_loan_dtl l ON l.CUST_NO = a.CUST_NO
+	LEFT JOIN lo_loan_payout_dtl p ON l.LOAN_NO = p.LOAN_NO 
+WHERE
+	s.`STATUS` = '20040004' 
+GROUP BY
+	f.RECEIVE_AMT 
+HAVING
+	sum( f.RECEIVE_AMT > 0 ) 
+ORDER BY
+	a.INST_TIME DESC 
+	LIMIT 1;'''
+    data = DataBase(which_db).get_one(sql)
     # print(data)
     lists = zhuan_huan(data)
     # print(lists)
     listd = list(lists)
     # print(listd)
     return listd
+
+def repay_data_2():
+    sql = '''#查询能够还款的用户,贷后逾期
+SELECT
+	a.CUST_NO,
+	c.PHONE_NO,
+	l.LOAN_NO,
+	p.ORDER_NO,
+	a.ACCOUNT_NO 
+FROM
+	cu_cust_reg_dtl c
+	LEFT JOIN cu_cust_status_info s ON c.cust_no = s.cust_no
+	LEFT JOIN cu_cust_account_dtl a ON c.CUST_NO = a.CUST_NO
+	LEFT JOIN fin_ad_dtl f ON f.ACCOUNT_NO = a.ACCOUNT_NO
+	LEFT JOIN lo_loan_dtl l ON l.CUST_NO = a.CUST_NO
+	LEFT JOIN lo_loan_payout_dtl p ON l.LOAN_NO = p.LOAN_NO 
+WHERE
+	s.`STATUS` = '20040005' 
+GROUP BY
+	f.RECEIVE_AMT 
+HAVING
+	sum( f.RECEIVE_AMT > 0 ) 
+ORDER BY
+	a.INST_TIME DESC 
+	LIMIT 1;'''
+    data = DataBase(which_db).get_one(sql)
+    # print(data)
+    lists = zhuan_huan(data)
+    # print(lists)
+    listd = list(lists)
+    # print(listd)
+    return listd
+
+def repay_data_3():
+    sql = '''#查询能够还款的用户,贷后正常（做结清操作）
+SELECT
+	c.PHONE_NO,
+	SUM( f.RECEIVE_AMT ) amt,
+	u.CLABE_NO,
+	a.ACCOUNT_NO,
+	s.CUST_NO 
+FROM
+	cu_cust_reg_dtl c
+	LEFT JOIN cu_cust_status_info s ON s.CUST_NO = c.CUST_NO
+	LEFT JOIN cu_cust_account_dtl a ON a.CUST_NO = s.CUST_NO
+	LEFT JOIN fin_ad_dtl f ON f.ACCOUNT_NO = a.ACCOUNT_NO
+	LEFT JOIN fin_clabe_usable_dtl u ON u.ACCOUNT_NO = a.ACCOUNT_NO 
+WHERE
+	s.`STATUS` = '20040004' 
+	AND s.CUST_NO NOT IN ( SELECT CUST_NO FROM lo_loan_dtl WHERE BEFORE_STAT = '10260008' ) 
+GROUP BY
+	a.ACCOUNT_NO 
+HAVING
+	sum( f.RECEIVE_AMT > 0 ) 
+ORDER BY
+	s.INST_TIME DESC 
+	LIMIT 1;'''
+    data = DataBase(which_db).get_one(sql)
+    # print(data)
+    lists = zhuan_huan(data)
+    # print(lists)
+    listd = list(lists)
+    # print(listd)
+    return listd
+
+def repay_data_4():
+    sql = '''#查询能够还款的用户,贷后逾期（做结清操作）
+SELECT
+	c.PHONE_NO,
+	SUM( f.RECEIVE_AMT ) amt,
+	u.CLABE_NO,
+	a.ACCOUNT_NO,
+	s.CUST_NO 
+FROM
+	cu_cust_reg_dtl c
+	LEFT JOIN cu_cust_status_info s ON s.CUST_NO = c.CUST_NO
+	LEFT JOIN cu_cust_account_dtl a ON a.CUST_NO = s.CUST_NO
+	LEFT JOIN fin_ad_dtl f ON f.ACCOUNT_NO = a.ACCOUNT_NO
+	LEFT JOIN fin_clabe_usable_dtl u ON u.ACCOUNT_NO = a.ACCOUNT_NO 
+WHERE
+	s.`STATUS` = '20040005' 
+	AND s.CUST_NO NOT IN ( SELECT CUST_NO FROM lo_loan_dtl WHERE BEFORE_STAT = '10260008' ) 
+GROUP BY
+	a.ACCOUNT_NO 
+HAVING
+	sum( f.RECEIVE_AMT > 0 ) 
+ORDER BY
+	s.INST_TIME DESC 
+	LIMIT 1;'''
+    data = DataBase(which_db).get_one(sql)
+    # print(data)
+    lists = zhuan_huan(data)
+    # print(lists)
+    listd = list(lists)
+    # print(listd)
+    return listd
+
 def evaluation_registNo():
     sql = '''#查询有客户号的手机号
-        select a.phone_no,a.cust_no,l.LOAN_NO from cu_cust_reg_dtl a 
-        left join lo_loan_dtl l on a.CUST_NO = l.CUST_NO
-        where l.LOAN_NO is not null and l.BEFORE_STAT='10260005' order by l.INST_TIME desc limit 1;'''
+SELECT
+	a.phone_no,
+	a.cust_no,
+	l.LOAN_NO 
+FROM
+	cu_cust_reg_dtl a
+	LEFT JOIN lo_loan_dtl l ON a.CUST_NO = l.CUST_NO 
+WHERE
+	l.LOAN_NO IS NOT NULL 
+	AND l.BEFORE_STAT = '10260005' 
+ORDER BY
+	l.INST_TIME DESC 
+	LIMIT 1;'''
     data = DataBase(which_db).get_one(sql)
     lists = list(data)
     return lists
+
 def auth_stat():
     sql = '''#查询已经认证完成的用户
-        select c.CUST_NO,r.PHONE_NO from cu_cust_auth_dtl c
-        left join cu_cust_reg_dtl r on c.CUST_NO=r.CUST_NO
-        where c.CERT_AUTH=1 and c.KYC_AUTH=1 and c.OTHER_CONTACT_AUTH=1 and c.WORK_AUTH=1 and c.BANK_AUTH=1
-        order by c.INST_TIME desc limit 1;'''
+SELECT
+	c.CUST_NO,
+	r.PHONE_NO 
+FROM
+	cu_cust_auth_dtl c
+	LEFT JOIN cu_cust_reg_dtl r ON c.CUST_NO = r.CUST_NO 
+WHERE
+	c.CERT_AUTH = 1 
+	AND c.KYC_AUTH = 1 
+	AND c.OTHER_CONTACT_AUTH = 1 
+	AND c.WORK_AUTH = 1 
+	AND c.BANK_AUTH = 1 
+ORDER BY
+	c.INST_TIME DESC 
+	LIMIT 1;'''
     data = DataBase(which_db).get_one(sql)
     lists = list(data)
     return lists
+
 # 更新密码，包含了用验证码方式注册登录的步骤
 def update_pwd(phoneNo):
     token = login_code(phoneNo)
@@ -281,11 +608,13 @@ def update_pwd(phoneNo):
             "newPwd": "123456"}
     r = requests.post(host_api + "/api/cust/pwd/update", data=json.dumps(data), headers=headt, verify=False)
     check_api(r)
+
 def random_four_zm():
     st = ''
     for j in range(4):  # 生成4个随机英文大写字母
         st += random.choice(string.ascii_uppercase)
     return st
+
 # 通过密码登录，返回token
 def login_pwd(phoneNo):
     s = huoqu_user_state(phoneNo)
@@ -297,41 +626,46 @@ def login_pwd(phoneNo):
     t = r.json()
     token = t['data']['token']
     return token
+
 def headtt(registNo):
     token = login_pwd(registNo)
     headt = head_token(token)
     return headt
+
 def for_test_auth_other():
     st = random_four_zm()
     registNo = str(random.randint(8000000000,9999999999)) # 10位随机数作为手机号
     code = compute_code(registNo)
     s = huoqu_user_state(registNo)
-    data = {"code": code,
+    data1 = {"code": code,
             "hasPwd": s['data']['hasPwd'],
             "phoneNo": registNo}
-    r = requests.post(host_api + "/api/cust/login", data=json.dumps(data), headers=head_api, verify=False)
-    t = r.json()
-    token = t['data']['token']
+    r1 = requests.post(host_api + "/api/cust/login", data=json.dumps(data1), headers=head_api, verify=False)
+    t1 = r1.json()
+    token = t1['data']['token']
     head = head_token(token)
-    data0 = {"birthdate": "1999-5-18",
-             "civilStatus": "10050001",
-             "curp": st + "990518MM" + st + "V8",
-             "delegationOrMunicipality": "zxcvbbbccxxx",
-             "education": "10190005",
-             "fatherLastName": "LIU",
-             "gender": "10030001",
-             "motherLastName": "LLL",
-             "name": "TEST",
-             "outdoorNumber": "qweetyyu",
-             "phoneNo": registNo,
-             "postalCode": "55555",
-             "state": "11130001",
-             "street": "444444",
-             "suburb": "asdfhhj",
-             "email": ""}
-    r = requests.post(host_api + '/api/cust/auth/cert', data=json.dumps(data0), headers=head)
-    t = r.json()
-    custNo = t['data']['custNo']
+    data2 = {"birthdate": "1998-11-18",
+            "civilStatus": "10050002",
+            "civilStatusName": "Soltero",
+            "curp": st + "981118MM" + st + "V8",
+            "delegationOrMunicipality": "zxcvbbbccxxx",
+            "education": "10190002",
+            "educationName": "Primaria",
+            "fatherLastName": "TEST",
+            "gender": "10030000",
+            "genderName": "Mujer",
+            "fatherLastName": "AUTO",
+            "motherLastName": "LLL",
+            "name": "TEST",
+            "outdoorNumber": "qweetyyu",
+            "phoneNo": registNo,
+            "postalCode": "55555",
+            "state": "11130001",
+            "street": "444444",
+            "suburb": "asdfhhj"}
+    r2 = requests.post(host_api + '/api/cust/auth/cert', data=json.dumps(data2), headers=head)
+    t2 = r2.json()
+    custNo = t2['data']['custNo']
     headp = head_token_payment(token)
     list = []
     list.append(registNo)
@@ -339,6 +673,7 @@ def for_test_auth_other():
     list.append(head)
     list.append(headp)
     return list
+
 def for_test_for_contact_other():
     test_data = for_test_auth_other()
     custNo = test_data[1]
@@ -368,6 +703,7 @@ def for_test_for_contact_other():
     list.append(custNo)
     list.append(head)
     return list
+
 def login_code(registNo):
     code = compute_code(registNo)
     s = huoqu_user_state(registNo)
@@ -379,6 +715,7 @@ def login_code(registNo):
     token = t['data']['token']
     head = head_token(token)
     return head
+
 def login_code_f(registNo):
     code = compute_code(registNo)
     s = huoqu_user_state(registNo)
@@ -390,6 +727,7 @@ def login_code_f(registNo):
     token = t['data']['token']
     head = head_token_f(token)
     return head
+
 def for_apply_loan():
     test_data = for_test_auth_other()
     custNo = test_data[1]
@@ -421,36 +759,10 @@ def for_apply_loan():
     list.append(head)
     return list
 
-def for_test_payment():
-    # 到待提现，检查账单详情
-    # cust,registNo,head,headp
-    test_data = for_test_auth_other()
-    registNo = test_data[0]
-    custNo = test_data[1]
-    head = test_data[2]
-    headp = test_data[3]
-    update_batch_log()
-    # kyc
-    update_kyc_auth(registNo, custNo)
-    # work
-    auth_work(registNo, head)
-    # 抓取数据
-    auth_app_grab_data(registNo, custNo, head)
-    # 联系人
-    t4 = auth_contact(custNo, head)
-    # 风控
-    risk_credit(head)
-    # 查询用户的状态
-    sql1 = "select status from cu_cust_status_info WHERE CUST_NO='"+custNo+"';"
-    result1 = DataBase(which_db).get_one(sql1)
-    if result1 is ('20040004'or "20040003"):
-        print("数据正确，不用改数！")
-    else:
-        print("要改数！")
-# 抓取数据
-def auth_app_grab_data(phoneNo,custNo,headt):
+# 抓取5个数据
+def auth_app_grab_data(phoneNo, custNo, headt):
     # 设备信息
-    data4 = {"custNo": custNo,
+    data1 = {"custNo": custNo,
              "dataType": "11090003",
              "grabData": {"deviceId": "28884415e8dc4bc3please open wifiSM-A5160","imei":"28884415e8dc4bc3",
                           "ipAddress": "192.168.20.100",
@@ -468,7 +780,7 @@ def auth_app_grab_data(phoneNo,custNo,headt):
              "phoneNo": phoneNo,
              "recordTime": "1634898295311"}
     # 联系人
-    data5 = {"custNo": custNo,
+    data2 = {"custNo": custNo,
              "dataType": "11090002",
              "grabData": {"data": [{"contactName": "5qV0PQ",
                                     "contactNo": "8293338387",
@@ -493,7 +805,7 @@ def auth_app_grab_data(phoneNo,custNo,headt):
              "phoneNo": phoneNo,
              "recordTime": "1634898388674"}
     # 短信内容
-    data6 = {"custNo": custNo,
+    data3 = {"custNo": custNo,
              "dataType": "11090005",
              "grabData": {"data": [{"address": "+525590632527",
                                   "body": "[AprestamoPlus] Felicitaciones https://bit.ly/3xBJoCT",
@@ -506,7 +818,7 @@ def auth_app_grab_data(phoneNo,custNo,headt):
              "phoneNo": phoneNo,
              "recordTime": "1634898295245"}
     # 位置信息
-    data7 = {"custNo": custNo,
+    data4 = {"custNo": custNo,
              "dataType": "11090004",
              "grabData": {"deviceId": "66af3c496c59bc733a:1e:f6:81:46:daV2031A",
                           "imei": "66af3c496c59bc73",
@@ -519,7 +831,7 @@ def auth_app_grab_data(phoneNo,custNo,headt):
              "phoneNo": phoneNo,
              "recordTime": "1635147615526"}
     # 已安装应用
-    data8 = {"custNo": custNo,
+    data5 = {"custNo": custNo,
              "dataType": "11090001",
              "grabData": {"data": [{"appName": "GBA Service",
                                     "appPackage": "com.mediatek.gba",
@@ -537,11 +849,12 @@ def auth_app_grab_data(phoneNo,custNo,headt):
              "pageGet": "Contact",
              "phoneNo": phoneNo,
              "recordTime": "1635147616281"}
-    data0 = [data4, data5, data6, data7, data8]
+    data0 = [data1, data2, data3, data4, data5]
     for data0 in data0:
         r0 = requests.post(host_api + '/api/common/grab/app_grab_data', data=json.dumps(data0), headers=headt)  #抓取用户手机设备信息，短信，通讯录，已安装app，位置信息
         time.sleep(1)
-def auth_work(custNo,headt):
+
+def auth_work(custNo, headt):
     data1 = {"certType": "WORK",
              "custNo": custNo}
     r1 = requests.post(host_api + '/api/cust/auth/review', data=json.dumps(data1), headers=headt)
@@ -570,9 +883,9 @@ def update_kyc_auth(registNo, custNo):
     DataBase(which_db).executeUpdateSql(sql2)
     DataBase(which_db).executeUpdateSql(sql3)
     DataBase(which_db).executeUpdateSql(sql4)
+
 # 第四个页面，其他联系人信息页面
-def auth_contact(custNo,headt):
-    #data9={"contacts":[{"name":"test","phone":"8888455666","relationship":"10110004"},{"name":"test2","phone":"8883355777","relationship":"10110003"}],"custNo":custNo}
+def auth_contact(custNo, headt):
     data9 = {"custNo": custNo,
              "contacts": [{"custNo": custNo,
                            "name": "test1",
@@ -586,10 +899,12 @@ def auth_contact(custNo,headt):
                            "relationshipName": "Padres"}]}
     r9 = requests.post(host_api + '/api/cust/auth/other/contact', data=json.dumps(data9), headers=headt)#最后一步，填写2个联系人的联系方式
     return r9.json()
+
 # 风控授信调度接口
 def risk_credit(headt):
     print("调用风控授信接口")
     r = requests.post(host_api + '/api/task/risk/credit', headers=headt)
+
 # 当前时间的前一天=跑批业务日期，才能正常申请借款
 def update_batch_log():
     sql = 'select now();'
@@ -607,7 +922,4 @@ def update_batch_log():
     DataBase(which_db).closeDB()
 
 if __name__ == '__main__':
-    # cx_registNo_04()
-    # payout_stp_data_success()
-    # cx_registNo_06()
     cx_registNo_07()

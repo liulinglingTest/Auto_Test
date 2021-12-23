@@ -33,7 +33,10 @@ class DaiQian_Api_Test(unittest.TestCase):
         '''/api/cust/check/user/state获取用户状态'''
         s = huoqu_user_state(registNo)
         code = compute_code(registNo)
-        data = {"code": code, "hasPwd": s['data']['hasPwd'], "phoneNo": registNo, "gaid": "Exception:null"}
+        data = {"code": code,
+                "hasPwd": s['data']['hasPwd'],
+                "phoneNo": registNo,
+                "gaid": "Exception:null"}
         r = requests.post(host_api + "/api/cust/login", data=json.dumps(data), headers=head_api, verify=False)
         self.assertEqual(r.status_code, 200)
         t = r.json()
@@ -45,7 +48,10 @@ class DaiQian_Api_Test(unittest.TestCase):
         phoneNo = cx_old_phoneNo()
         s = huoqu_user_state(phoneNo)
         #print('s--',s)
-        data = {"phoneNo": phoneNo, "password": "123456", "hasPwd": s['data']['hasPwd'], "gaid": "Exception:null"}
+        data = {"phoneNo": phoneNo,
+                "password": "123456",
+                "hasPwd": s['data']['hasPwd'],
+                "gaid": "Exception:null"}
         r = requests.post(host_api + "/api/cust/pwd/login", data=json.dumps(data), headers=head_api, verify=False)
         t = r.json()
         #print('t--',t)
@@ -56,7 +62,8 @@ class DaiQian_Api_Test(unittest.TestCase):
         '''【LanaDigital】/api/cust/pwd/update更新用户密码接口-正案例'''
         registNo = str(random.randint(8000000000, 9999999999)) #10位随机数作为手机号
         head = login_code(registNo)
-        data = {"phoneNo": registNo, "newPwd": "123456"}
+        data = {"phoneNo": registNo,
+                "newPwd": "123456"}
         r = requests.post(host_api + "/api/cust/pwd/update", data=json.dumps(data), headers=head, verify=False)
         t = r.json()
         self.assertEqual(t['errorCode'], 0)
@@ -65,8 +72,25 @@ class DaiQian_Api_Test(unittest.TestCase):
         st = random_four_zm()
         registNo = str(random.randint(8000000000, 9999999999))  # 10位随机数作为手机号
         head = login_code(registNo)
-        data = {"birthdate": "1998-11-18", "civilStatus": "10050002", "civilStatusName": "Soltero", "curp": st+"981118MM"+st+"V8", "delegationOrMunicipality": "zxcvbbbccxxx", "education": "10190002", "educationName": "Primaria", "fatherLastName": "WANG", "gender": "10030000",
-              "genderName": "Mujer", "motherLastName": "LIU", "name": "SHUANG", "outdoorNumber": "qweetyyu", "phoneNo": registNo, "postalCode": "55555", "state": "11130001", "street": "444444", "suburb": "asdfhhj"}
+        data = {"birthdate": "1998-11-18",
+                "civilStatus": "10050002",
+                "civilStatusName": "Soltero",
+                "curp": st + "981118MM" + st + "V8",
+                "delegationOrMunicipality": "zxcvbbbccxxx",
+                "education": "10190002",
+                "educationName": "Primaria",
+                "fatherLastName": "TEST",
+                "gender": "10030000",
+                "genderName": "Mujer",
+                "fatherLastName": "AUTO",
+                "motherLastName": "LLL",
+                "name": "TEST",
+                "outdoorNumber": "qweetyyu",
+                "phoneNo": registNo,
+                "postalCode": "55555",
+                "state": "11130001",
+                "street": "444444",
+                "suburb": "asdfhhj"}
         r = requests.post(host_api + '/api/cust/auth/cert', data=json.dumps(data), headers=head, verify=False)
         t = r.json()
         custNo = t['data']['custNo']
@@ -80,7 +104,8 @@ class DaiQian_Api_Test(unittest.TestCase):
         test_data = for_test_auth_other()
         custNo = test_data[1]
         head = test_data[2]
-        data = {"certType": "WORK", "custNo": custNo}
+        data = {"certType": "WORK",
+                "custNo": custNo}
         r = requests.post(host_api + '/api/cust/auth/review', data=json.dumps(data), headers=head, verify=False)
         t = r.json()
         self.assertEqual(t['errorCode'], 0)
@@ -100,7 +125,13 @@ class DaiQian_Api_Test(unittest.TestCase):
         test_data = for_test_auth_other()
         custNo = test_data[1]
         head = test_data[2]
-        data = {"companyAddress": "", "companyName": "", "companyPhone": "", "custNo": custNo, "income": "10870004", "industry": "", "jobType": "10130006"}#工作收入来源
+        data = {"companyAddress": "",
+                "companyName": "",
+                "companyPhone": "",
+                "custNo": custNo,
+                "income": "10870004",
+                "industry": "",
+                "jobType": "10130006"}#工作收入来源
         r = requests.post(host_api + '/api/cust/auth/work', data=json.dumps(data), headers=head, verify=False)
         t = r.json()
         self.assertEqual(t['errorCode'], 0)
@@ -301,7 +332,7 @@ class DaiQian_Api_Test(unittest.TestCase):
                  'feedbackDesc': (None, 'test-test'),
                  'feedbackType': (None, '11110003'),
                  'feedbackPage': (None, 'CLABE'),
-               'feedbackOption': (None, 'No sé cuál es mi cuenta CLABE'),
+                 'feedbackOption': (None, 'No sé cuál es mi cuenta CLABE'),
                  'imgs': ('key.png', open(r'D:\pic\app.jpg', 'rb'), 'text/plain')}
         r = requests.post(host_api + '/api/hook/feedback', files=files, headers=headt_api_f, verify=False)
         t = r.json()

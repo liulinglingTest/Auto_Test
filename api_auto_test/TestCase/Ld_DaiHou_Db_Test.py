@@ -14,7 +14,7 @@ class DaiHou_Api_Test(unittest.TestCase):
     def tearDown(self):  # 每个用例运行之后运行的
         print('teardown_test')
     def test_check_success(self):
-        '''【LanaDigital】放款成功后，无还款和减免，相关4个表关键字段值核对-正案例'''
+        '''【LanaDigital】放款成功后，无还款和减免，相关5个表关键字段值核对-正案例'''
         sql = 'select CURRENT_DATE;'
         date_time = DataBase(which_db).get_one(sql)
         billdate = str(date_time[0] + datetime.timedelta(days=30))
@@ -23,30 +23,36 @@ class DaiHou_Api_Test(unittest.TestCase):
         cust_no = data[0]
         loan_no = data[1]
         account_no = data[2]
+        order_no = data[3]
         t1 = cx_lo_loan_dtl(loan_no)
         # print(t1)
-        self.assertEqual(t1, [('500.00', '500.00', '10260005', '10270002')])
+        self.assertEqual(t1, [('10260005', '10270002')])
 
-        t2 = cx_pay_tran_dtl(loan_no)
+        t2 = cx_pay_tran_dtl(order_no)
         # print(t2)
         self.assertEqual(t2, [('10220002', '500.00')])
 
-        t3 = cx_fin_payout_dtl(loan_no)
+        t3 = cx_fin_payout_dtl(order_no)
         # print(t3)
         self.assertEqual(t3, [('10420002', '500.00')])
 
         t4 = cx_lo_loan_payout_dtl(loan_no)
         # print(t4)
-        self.assertEqual(t4, [('10290002', '500.00', '10420002')])
+        self.assertEqual(t4, [('10290002', '10420002')])
+
+        t5 = cx_cu_cust_status_info(cust_no)
+        self.assertEqual(t5, '20040004')
     def test_check_failure(self):
         '''【LanaDigital】放款成功后又失败，无还款和减免，相关10个表关键字段值核对-正案例'''
         data = payout_stp_data_failure_1()
+        # print(data)
         cust_no = data[0]
         loan_no = data[1]
         account_no = data[2]
+        order_no = data[3]
         t1 = cx_lo_loan_dtl(loan_no)
         # print(t1)
-        self.assertEqual(t1, [('500.00', '500.00', '10260009', 'None')])
+        self.assertEqual(t1, [('10260009', 'None')])
 
         t2 = cx_cu_cust_bill_dtl(cust_no)
         # print(t2)
@@ -56,29 +62,22 @@ class DaiHou_Api_Test(unittest.TestCase):
         # print(t3)
         self.assertIsNone(t3)
 
-        t4 = cx_pay_tran_dtl(loan_no)
+        t4 = cx_pay_tran_dtl(order_no)
         # print(t4)
         self.assertEqual(t4, [('10220003', '0.00')])
 
-        t6 = cx_fin_payout_dtl(loan_no)
+        t5 = cx_lo_loan_payout_dtl(loan_no)
+        # print(t5)
+        self.assertEqual(t5, [('10290002', '10420003')])
+
+        t6 = cx_fin_ad_dtl(order_no)
         # print(t6)
-        self.assertEqual(t6, [( '10420002', '500.00')])
+        self.assertIsNone(t6)
 
-        # t7 = cx_fin_account_turnover_dtl(account_no)
-        # # print(t7)
-        # self.assertIsNone(t7)
+        t7 = cx_fin_payout_dtl(order_no)
+        # print(t7)
+        self.assertEqual(t7, [('10420003', '500.00')])
 
-        # t8 = cx_fin_ad_dtl(account_no)
-        # # print(t8)
-        # self.assertIsNone(t8)
-        #
-        # t9 = cx_fin_ad_record(account_no)
-        # # print(t9)
-        # self.assertIsNone(t9)
-        #
-        # t10 = cx_fin_rc_dtl(account_no)
-        # # print(t10)
-        # self.assertIsNone(t10)
     @classmethod
     def tearDownClass(cls): # 在所有用例都执行完之后运行的
         print("我是tearDownClass，我位于所有用例运行的结束")

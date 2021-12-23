@@ -12,7 +12,7 @@ def zhuan_huan(result):
 def cx_lo_loan_dtl(loan_no):
     # lo_loan_dtl贷款基本信息表,查询loan_no等【放款成功-贷前状态变更为10260005】
     # lo_loan_dtl贷款基本信息表,查询loan_no等【放款失败-贷前状态变更为10260009】
-    sql = "select apply_loan_amt,loan_amt,before_stat,after_stat from lo_loan_dtl where LOAN_NO = '" + loan_no + "';"
+    sql = "select before_stat,after_stat from lo_loan_dtl where LOAN_NO = '" + loan_no + "';"
     data = DataBase(which_db).get_one(sql)
     # print(data)
     lists = zhuan_huan(data)
@@ -38,18 +38,18 @@ def cx_cu_cust_fee_dtl(cust_no):
     # print(data)
     lists = zhuan_huan(data)
     return lists
-def cx_pay_tran_dtl(loan_no):
+def cx_pay_tran_dtl(order_no):
     # pay_交易明细表 【放款成功，状态变更为10220002-交易成功】
     # pay_交易明细表 【放款失败会回滚，状态变更为10220003-交易失败】
-    sql = "select TRAN_STAT,ACT_TRAN_AMT from pay_tran_dtl t where t.tran_no = (select ORDER_NO from lo_loan_payout_dtl where LOAN_NO='" + loan_no + "');"
+    sql = "select TRAN_STAT,ACT_TRAN_AMT from pay_tran_dtl t where t.tran_no = '" + order_no + "';"
     data = DataBase(which_db).get_one(sql)
     # print(data)
     lists = zhuan_huan(data)
     return lists
-def cx_fin_payout_dtl(loan_no):
+def cx_fin_payout_dtl(order_no):
     # fin_payout_dtl 【放款成功,状态置为10420002成功】
     # fin_payout_dtl 【放款失败会回滚,状态置为10420003失败】
-    sql = "select ORDER_STATUS,ACT_TRAN_AMT from fin_payout_dtl where ORDER_NO = (select ORDER_NO from lo_loan_payout_dtl where LOAN_NO='" + loan_no + "');"
+    sql = "select ORDER_STATUS,ACT_TRAN_AMT from fin_payout_dtl where ORDER_NO = '" + order_no + "';"
     data = DataBase(which_db).get_one(sql)
     # print(data)
     lists = zhuan_huan(data)
@@ -60,9 +60,9 @@ def cx_fin_account_turnover_dtl(account_no):
     data = DataBase(which_db).get_one(sql)
     # print(data)
     return data
-def cx_fin_ad_dtl(account_no):
+def cx_fin_ad_dtl(order_no):
     # fin_应收明细表，汇总【放款失败会回滚，删掉数据】
-    sql = "select BILL_DATE from fin_ad_dtl where ACCOUNT_NO = '" + account_no + "' order by INST_TIME desc;"
+    sql = "select BILL_DATE from fin_ad_dtl where order_no = '" + order_no + "' order by INST_TIME desc;"
     data = DataBase(which_db).get_one(sql)
     # print(data)
     return data
@@ -78,9 +78,26 @@ def cx_fin_rc_dtl(account_no):
     data = DataBase(which_db).get_one(sql)
     return data
 def cx_lo_loan_payout_dtl(loan_no):
-    # lo_loan_payout_dtl实付表
-    sql = "select TRAN_TYPE,ORDER_AMT,ORDER_STATUS from lo_loan_payout_dtl where LOAN_NO='" + loan_no + "';"
+    # lo_loan_payout_dtl,放款成功，ORDER_STATUS为10420002
+    # lo_loan_payout_dtl,放款失败，ORDER_STATUS为10420003
+    sql = "select TRAN_TYPE,ORDER_STATUS from lo_loan_payout_dtl where LOAN_NO='" + loan_no + "';"
     data = DataBase(which_db).get_one(sql)
     lists = zhuan_huan(data)
     return lists
-# if __name__ == '__main__':
+def cx_fin_ad_dtl_1(account_no):
+    # fin_应收明细表，结清后，该account_no的数据会删除
+    sql = "select BILL_DATE from fin_ad_dtl where ACCOUNT_NO = '" + account_no + "' order by INST_TIME desc;"
+    data = DataBase(which_db).get_one(sql)
+    # print(data)
+    return data
+def cx_cu_cust_status_info(cust_no):
+    # 客户状态信息表，放款成功，状态变为20040004正常
+    # 客户状态信息表，结清后，状态变为20040007授信中
+    sql = "select `STATUS` from cu_cust_status_info where CUST_NO='" + cust_no + "';"
+    data = DataBase(which_db).get_one(sql)
+    # print(str(data[0]))
+    lists = str(data[0])
+    # print(lists)
+    return lists
+if __name__ == '__main__':
+    cx_cu_cust_status_info('C2082111098146386007265312768')

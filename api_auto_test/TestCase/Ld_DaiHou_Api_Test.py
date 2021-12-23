@@ -189,7 +189,7 @@ class DaiHou_Api_Test(unittest.TestCase):
         # self.assertEqual(t['errorCode'], 0)
     def test_credit_repayment_bill(self):
         '''【LanaDigital】/api/credit/repayment/bill账单详情接口-正案例'''
-        text_data = repay_data()
+        text_data = repay_data_1()
         headt_api = login_code(text_data[0][1])
         r = requests.get(host_api + '/api/credit/repayment/bill', headers=headt_api, verify=False)
         t = r.json()
@@ -203,7 +203,7 @@ class DaiHou_Api_Test(unittest.TestCase):
         #     #self.assertEqual(billDetailList[i][''])
     def test_credit_repayment_history_bill(self):
         '''【LanaDigital】/api/credit/repayment/history/bill账单历史详情接口-正案例'''
-        text_data = repay_data()
+        text_data = repay_data_1()
         head = login_code(text_data[0][1])
         r = requests.get(host_api + '/api/credit/repayment/history/bill', headers=head, verify=False)
         t = r.json()
@@ -211,7 +211,7 @@ class DaiHou_Api_Test(unittest.TestCase):
         self.assertEqual(t['errorCode'], 0)
     def test_credit_repayMethods(self):
         '''【LanaDigital】/api/credit/repayment/repay/methods/CUST_NO还款方式接口-正案例'''
-        text_data = repay_data()
+        text_data = repay_data_1()
         cust_no = text_data[0][0]
         headt_api = login_code(text_data[0][1])
         r = requests.post(host_api + '/api/credit/repayment/repay/methods/' + cust_no, headers=headt_api, verify=False)
@@ -231,9 +231,9 @@ class DaiHou_Api_Test(unittest.TestCase):
                                      "supportTime": "24/7"}},
                    "errorCode": 0,
                    "message": "ok"})
-    def test_credit_repaymentRepay_STP(self):
-        '''【LanaDigital】/api/credit/repayment/repay还款获取码(STP)-正案例'''
-        text_data = repay_data()
+    def test_credit_repaymentRepay_STP_1(self):
+        '''【LanaDigital】/api/credit/repayment/repay还款获取码(STP)有在贷（正常）-正案例'''
+        text_data = repay_data_1()
         head = login_code(text_data[0][1])
         loan_no = text_data[0][2]
         amt = text_data[0][3]
@@ -244,9 +244,22 @@ class DaiHou_Api_Test(unittest.TestCase):
         t = r.json()
         # print(t)
         # self.assertEqual(t['errorCode'],0)
-    def test_credit_repaymentRepay_OXXO(self):
-        '''【LanaDigital】/api/credit/repayment/repay还款获取码(OXXO)-正案例'''
-        text_data = repay_data()
+    def test_credit_repaymentRepay_STP_2(self):
+        '''【LanaDigital】/api/credit/repayment/repay还款获取码(STP)有在贷（逾期）-正案例'''
+        text_data = repay_data_2()
+        head = login_code(text_data[0][1])
+        loan_no = text_data[0][2]
+        amt = text_data[0][3]
+        data = {"repaymentList": [{"loanNo": loan_no,
+                                   "repayAmt": amt}],
+                "repaymentMethod": "STP"}
+        r = requests.post(host_pay + '/api/credit/repayment/repay', data=json.dumps(data), headers=head, verify=False)
+        t = r.json()
+        # print(t)
+        # self.assertEqual(t['errorCode'],0)
+    def test_credit_repaymentRepay_OXXO_1(self):
+        '''【LanaDigital】/api/credit/repayment/repay还款获取码(OXXO)有在贷（正常）-正案例'''
+        text_data = repay_data_1()
         head = login_code(text_data[0][1])
         loan_no = text_data[0][2]
         amt = text_data[0][3]
@@ -257,13 +270,31 @@ class DaiHou_Api_Test(unittest.TestCase):
         t = r.json()
         # print(t)
         #self.assertEqual(t['errorCode'], 0)
-    def test_webhook_repaySTP(self):
-        '''【LanaDigital】/api/web_hook/repay/stp模拟stp还款回调接口-正案例'''
-        ids = str(random.randint(111111111, 999999999)) #9位随机数作为id
-        text_data = repay_data()
+    def test_credit_repaymentRepay_OXXO_2(self):
+        '''【LanaDigital】/api/credit/repayment/repay还款获取码(OXXO)有在贷（逾期）-正案例'''
+        text_data = repay_data_2()
+        # print(text_data)
         head = login_code(text_data[0][1])
-        clabe_no = text_data[0][4]
-        amt = 100
+        loan_no = text_data[0][2]
+        amt = text_data[0][3]
+        data = {"repaymentList": [{"loanNo": loan_no,
+                                   "repayAmt": amt}],
+                "repaymentMethod": "OXXO"}
+        r = requests.post(host_pay + '/api/credit/repayment/repay', data=json.dumps(data), headers=head,
+                          verify=False)
+        t = r.json()
+        # print(t)
+        # self.assertEqual(t['errorCode'], 0)
+    def test_webhook_repaySTP_1(self):
+        '''【LanaDigital】/api/web_hook/repay/stp还款接口-STP模拟银行回调-有在贷（正常）验证结清-正案例'''
+        ids = str(random.randint(111111111, 999999999)) #9位随机数作为id
+        text_data = repay_data_3()
+        # print(text_data)
+        head = login_code(text_data[0][0])
+        amt = text_data[0][1]
+        clabe_no = text_data[0][2]
+        account_no = text_data[0][3]
+        cust_no = text_data[0][4]
         data = {"abono": {"id": ids,
                           "monto": amt,
                           "cuentaBeneficiario": clabe_no,
@@ -285,6 +316,46 @@ class DaiHou_Api_Test(unittest.TestCase):
         t = r.json()
         # print(t)
         self.assertEqual(t['errorCode'], 0)
+        t1 = cx_fin_ad_dtl_1(account_no)
+        self.assertIsNone(t1)
+        t2 = cx_cu_cust_status_info(cust_no)
+        # print(t2)
+        self.assertEqual(t2, '20040007')
+    def test_webhook_repaySTP_2(self):
+        '''【LanaDigital】/api/web_hook/repay/stp还款接口-STP模拟银行回调-有在贷（逾期）验证结清-正案例'''
+        ids = str(random.randint(111111111, 999999999)) #9位随机数作为id
+        text_data = repay_data_4()
+        # print(text_data)
+        head = login_code(text_data[0][0])
+        amt = text_data[0][1]
+        clabe_no = text_data[0][2]
+        account_no = text_data[0][3]
+        cust_no = text_data[0][4]
+        data = {"abono": {"id": ids,
+                          "monto": amt,
+                          "cuentaBeneficiario": clabe_no,
+                          "fechaOperacion": "20210108",
+                          "institucionOrdenante": "40012",
+                          "institucionBeneficiaria": "90646",
+                          "claveRastreo": "MBAN01002101080089875109",
+                          "nombreOrdenante": "HAZEL VIRIDIANA RUIZ RICO",
+                          "tipoCuentaOrdenante": "40",
+                          "cuentaOrdenante": "012420028362208190",
+                          "rfcCurpOrdenante": "RURH8407075F8",
+                          "nombreBeneficiario": "STP",
+                          "tipoCuentaBeneficiario": "40",
+                          "rfcCurpBeneficiario": "null",
+                          "conceptoPago": "ESTELA SOLICITO TRANSFERENCIA",
+                          "referenciaNumerica": "701210",
+                          "empresa": "QUANTX_TECH"}}
+        r = requests.post(host_pay + '/api/web_hook/repay/stp', data=json.dumps(data), headers=head, verify=False)
+        t = r.json()
+        # print(t)
+        self.assertEqual(t['errorCode'], 0)
+        t1 = cx_fin_ad_dtl_1(account_no)
+        self.assertIsNone(t1)
+        t2 = cx_cu_cust_status_info(cust_no)
+        self.assertEqual(t2, '20040007')
     @classmethod
     def tearDownClass(cls): # 在所有用例都执行完之后运行的
         print("我是tearDownClass，我位于所有用例运行的结束")
