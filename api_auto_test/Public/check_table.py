@@ -99,5 +99,11 @@ def cx_cu_cust_status_info(cust_no):
     lists = str(data[0])
     # print(lists)
     return lists
+def cx_cu_cust_bill_dtl(cust_no):
+    # 客户账单信息,账单状态为20060000，正常
+    sql = "select BILL_STATUS from cu_cust_bill_dtl WHERE CUST_NO='" + cust_no + "';"
+    data = DataBase(which_db).get_one(sql)
+    # print(data)
+    return data
 if __name__ == '__main__':
-    cx_cu_cust_status_info('C2082111098146386007265312768')
+    cx_cu_cust_bill_dtl('C2082201188171665229407780864')

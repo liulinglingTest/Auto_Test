@@ -29,7 +29,15 @@ def huoqu_user_state(registNo):
 
 def cx_old_phoneNo():
     sql = '''#查询客户号不为空的用户手机号
-    select PHONE_NO from cu_cust_reg_dtl where CUST_NO is not null and GAID='Exception:null' ORDER BY INST_TIME desc;'''
+SELECT
+	PHONE_NO 
+FROM
+	cu_cust_reg_dtl 
+WHERE
+	CUST_NO IS NOT NULL 
+	AND GAID = 'Exception:null' 
+ORDER BY
+	INST_TIME DESC;'''
     phoneNo = DataBase(which_db).get_one(sql)
     #print('phoneNo----',phoneNo)
     phoneNo = str(phoneNo[0])
@@ -84,7 +92,7 @@ FROM
 	LEFT JOIN cu_cust_fee_bill_dtl b ON a.loan_no = b.loan_no
 	LEFT JOIN cu_cust_reg_dtl c ON a.cust_no = c.cust_no
 	LEFT JOIN cu_cust_status_info s ON c.CUST_NO = s.CUST_NO 
-WHERE
+WHERE 
 	a.before_stat = '10260005' 
 	AND a.after_stat = '10270003' 
 	AND s.`STATUS` = '20040005' 

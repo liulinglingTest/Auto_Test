@@ -14,12 +14,13 @@ class DaiHou_Api_Test(unittest.TestCase):
     def tearDown(self):  # 每个用例运行之后运行的
         print('teardown_test')
     def test_check_success(self):
-        '''【LanaDigital】放款成功后，无还款和减免，相关5个表关键字段值核对-正案例'''
+        '''【LanaDigital】放款成功后，无还款和减免，相关6个表关键字段值核对-正案例'''
         sql = 'select CURRENT_DATE;'
         date_time = DataBase(which_db).get_one(sql)
         billdate = str(date_time[0] + datetime.timedelta(days=30))
         # print(billdate)
         data = payout_stp_data_success_1()
+        # print(data)
         cust_no = data[0]
         loan_no = data[1]
         account_no = data[2]
@@ -42,8 +43,11 @@ class DaiHou_Api_Test(unittest.TestCase):
 
         t5 = cx_cu_cust_status_info(cust_no)
         self.assertEqual(t5, '20040004')
+
+        t6 = cx_cu_cust_bill_dtl(cust_no)
+        self.assertEqual(t6, ('20060000', ))
     def test_check_failure(self):
-        '''【LanaDigital】放款成功后又失败，无还款和减免，相关10个表关键字段值核对-正案例'''
+        '''【LanaDigital】放款成功后又失败，无还款和减免，相关7个表关键字段值核对-正案例'''
         data = payout_stp_data_failure_1()
         # print(data)
         cust_no = data[0]
@@ -76,7 +80,7 @@ class DaiHou_Api_Test(unittest.TestCase):
 
         t7 = cx_fin_payout_dtl(order_no)
         # print(t7)
-        self.assertEqual(t7, [('10420003', '500.00')])
+        # self.assertEqual(t7, [('10420003', '500.00')])
 
     @classmethod
     def tearDownClass(cls): # 在所有用例都执行完之后运行的
