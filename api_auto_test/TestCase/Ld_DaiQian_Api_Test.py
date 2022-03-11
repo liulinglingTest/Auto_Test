@@ -48,6 +48,7 @@ class DaiQian_Api_Test(unittest.TestCase):
         phoneNo = cx_old_phoneNo()
         s = huoqu_user_state(phoneNo)
         #print('s--',s)
+        print(phoneNo)
         data = {"phoneNo": phoneNo,
                 "password": "123456",
                 "hasPwd": s['data']['hasPwd'],
@@ -79,7 +80,6 @@ class DaiQian_Api_Test(unittest.TestCase):
                 "delegationOrMunicipality": "zxcvbbbccxxx",
                 "education": "10190002",
                 "educationName": "Primaria",
-                "fatherLastName": "TEST",
                 "gender": "10030000",
                 "genderName": "Mujer",
                 "fatherLastName": "AUTO",
