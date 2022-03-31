@@ -303,8 +303,9 @@ class DaiQian_Api_Test(unittest.TestCase):
         # print(registNo)
         custNo = list[1]
         headt_api = login_code(registNo)
-        data = {"bankCode": "10020037",
-                "clabe": "138455214411441118",
+        data = {"bankCode": "10020008",
+                "bankCodeName": "BBVA BANCOMER",
+                "clabe": "012121212121212128",
                 "custNo": custNo}
         r = requests.post(host_api + '/api/cust/auth/bank', data=json.dumps(data), headers=headt_api, verify=False)
         t = r.json()
@@ -314,8 +315,9 @@ class DaiQian_Api_Test(unittest.TestCase):
         '''【lanaPlus】/api/cust/auth/bank绑定银行卡接口(客户未认证，不能绑卡)-正案例'''
         registNo = cx_registNo_08()
         headt_api = login_code(registNo)
-        data = {"bankCode": "10020037",
-                "clabe": "138455214411441118",
+        data = {"bankCode": "10020008",
+                "bankCodeName": "BBVA BANCOMER",
+                "clabe": "012121212121212128",
                 "custNo": ''}
         r = requests.post(host_api + '/api/cust/auth/bank', data=json.dumps(data), headers=headt_api, verify=False)
         t = r.json()
@@ -333,7 +335,7 @@ class DaiQian_Api_Test(unittest.TestCase):
                  'feedbackType': (None, '11110003'),
                  'feedbackPage': (None, 'CLABE'),
                  'feedbackOption': (None, 'No sé cuál es mi cuenta CLABE'),
-                 'imgs': ('key.png', open(r'D:\pic\app.jpg', 'rb'), 'text/plain')}
+                 'img':(None)}
         r = requests.post(host_api + '/api/hook/feedback', files=files, headers=headt_api_f, verify=False)
         t = r.json()
         #print(t)

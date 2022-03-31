@@ -3,7 +3,7 @@ __all__ = ['host_api','host_action','host_mgt','host_pay','head_api','head_mgt',
 which_db = 'mex_credit'
 host_api = "https://test-api.lanadigital.mx"
 host_action = "https://test-action.lanadigital.mx"
-host_mgt = "https://test-mgt.lanadigital.mx/"
+host_mgt = "https://test-mgt.lanadigital.mx"
 host_pay = "https://test-pay.lanadigital.mx"
 head_api = {"user-agent": "Dart/2.12 (dart:io)",
             "x-user-language": "es",
