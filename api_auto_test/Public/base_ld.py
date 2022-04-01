@@ -110,7 +110,7 @@ SELECT
 	c.phone_no,
 	c.cust_no 
 FROM
-	cu_cust_reg_dtl c ON a.cust_no = c.cust_no
+	cu_cust_reg_dtl c 
 	LEFT JOIN cu_cust_status_info s ON c.CUST_NO = s.CUST_NO 
 WHERE
 	s.`STATUS` = '20040007' 

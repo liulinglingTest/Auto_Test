@@ -63,16 +63,16 @@ class DaiHou_Api_Test(unittest.TestCase):
         # print(t)
         self.assertEqual(t['errorCode'], 0)
         self.assertEqual(t['data']['stat'], 'UNDER_WITHDRAW')
-    def test_credit_index_6(self):
-        '''【LanaDigital】/api/credit/index用户首页状态接口(锁定)-正案例'''
-        test_data = cx_registNo_06()
-        registNo = test_data[0]
-        head = login_code(registNo)
-        r = requests.get(host_api + '/api/credit/index', headers=head, verify=False)
-        t = r.json()
-        # print(t)
-        self.assertEqual(t['errorCode'], 0)
-        #self.assertEqual(t['data']['stat'], 'UNDER_WITHDRAW')
+    # def test_credit_index_6(self):
+    #     '''【LanaDigital】/api/credit/index用户首页状态接口(锁定)-正案例'''
+    #     test_data = cx_registNo_06()
+    #     registNo = test_data[0]
+    #     head = login_code(registNo)
+    #     r = requests.get(host_api + '/api/credit/index', headers=head, verify=False)
+    #     t = r.json()
+    #     # print(t)
+    #     self.assertEqual(t['errorCode'], 0)
+    #     #self.assertEqual(t['data']['stat'], 'UNDER_WITHDRAW')
     def test_credit_index_7(self):
         '''【LanaDigital】/api/credit/index用户首页状态接口(撤销)-正案例'''
         test_data = cx_registNo_07()
